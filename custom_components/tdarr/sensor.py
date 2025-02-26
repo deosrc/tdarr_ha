@@ -26,7 +26,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         sensors.append(TdarrSensor(entry, value, config_entry.options, "library"))
         id += 1
     # Server Node Sensors
-    fps_count = 0
     for key, value in entry.data["nodes"].items():
         sensors.append(TdarrSensor(entry, value, config_entry.options, "node"))
         sensors.append(TdarrSensor(entry, value, config_entry.options, "nodefps"))

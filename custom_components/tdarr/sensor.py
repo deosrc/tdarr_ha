@@ -61,19 +61,19 @@ SERVER_ENTITY_DESCRIPTIONS = {
     ),
 }
 
-LIBRARY_ENTITY_DESCRIPTION=SensorEntityDescription(
+LIBRARY_ENTITY_DESCRIPTION = SensorEntityDescription(
     key="library",
     icon="mdi:folder-multiple",
     unit_of_measurement="Files"
 )
 
-NODE_ENTITY_DESCRIPTIONS={
+NODE_ENTITY_DESCRIPTIONS = {
     "node": SensorEntityDescription(
         key="node",
         icon="mdi:server-network-outline",
     ),
     "nodefps": SensorEntityDescription(
-        key="node",
+        key="nodefps",
         icon="mdi:video",
         unit_of_measurement="FPS"
     )

@@ -21,7 +21,8 @@ SERVER_ENTITY_DESCRIPTIONS = {
     "stats_spacesaved": SensorEntityDescription(
         key="stats_spacesaved",
         icon="mdi:harddisk",
-        unit_of_measurement="GB"
+        unit_of_measurement="GB",
+        device_class=SensorDeviceClass.DATA_SIZE
     ),
     "stats_transcodefilesremaining": SensorEntityDescription(
         key="stats_transcodefilesremaining",
@@ -238,10 +239,6 @@ class TdarrSensor(
     @property
     def extra_state_attributes(self):
         return self.get_value("attributes")
-    
-    @property
-    def device_class(self):
-        return SENSORS.get(self.type, {}).get("device_class", None)
     
     @property
     def state_class(self):

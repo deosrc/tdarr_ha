@@ -21,50 +21,50 @@ SERVER_ENTITY_DESCRIPTIONS = {
     "stats_spacesaved": SensorEntityDescription(
         key="stats_spacesaved",
         icon="mdi:harddisk",
-        unit_of_measurement="GB",
+        native_unit_of_measurement="GB",
         device_class=SensorDeviceClass.DATA_SIZE
     ),
     "stats_transcodefilesremaining": SensorEntityDescription(
         key="stats_transcodefilesremaining",
         icon="mdi:file-multiple",
-        unit_of_measurement="Files"
+        native_unit_of_measurement="files"
     ),
     "stats_transcodedcount": SensorEntityDescription(
         key="stats_transcodedcount",
         icon="mdi:file-multiple",
-        unit_of_measurement="Files"
+        native_unit_of_measurement="files"
     ),
     "stats_stagedcount": SensorEntityDescription(
         key="stats_stagedcount",
         icon="mdi:file-multiple",
-        unit_of_measurement="Files"
+        native_unit_of_measurement="files"
     ),
     "stats_healthcount": SensorEntityDescription(
         key="stats_healthcount",
         icon="mdi:file-multiple",
-        unit_of_measurement="Files"
+        native_unit_of_measurement="files"
     ),
     "stats_transcodeerrorcount": SensorEntityDescription(
         key="stats_transcodeerrorcount",
         icon="mdi:file-multiple",
-        unit_of_measurement="Files"
+        native_unit_of_measurement="files"
     ),
     "stats_healtherrorcount": SensorEntityDescription(
         key="stats_healtherrorcount",
         icon="mdi:medication-outline",
-        unit_of_measurement="Files"
+        native_unit_of_measurement="files"
     ),
     "stats_totalfps": SensorEntityDescription(
         key="stats_totalfps",
         icon="mdi:video",
-        unit_of_measurement="FPS"
+        native_unit_of_measurement="fps"
     ),
 }
 
 LIBRARY_ENTITY_DESCRIPTION = SensorEntityDescription(
     key="library",
     icon="mdi:folder-multiple",
-    unit_of_measurement="Files"
+    native_unit_of_measurement="files"
 )
 
 NODE_ENTITY_DESCRIPTIONS = {
@@ -75,7 +75,7 @@ NODE_ENTITY_DESCRIPTIONS = {
     "nodefps": SensorEntityDescription(
         key="nodefps",
         icon="mdi:video",
-        unit_of_measurement="FPS"
+        native_unit_of_measurement="fps"
     )
 }
 
@@ -234,7 +234,6 @@ class TdarrSensor(
     @property 
     def native_value(self):
         return self.get_value("state")
-
 
     @property
     def extra_state_attributes(self):

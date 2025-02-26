@@ -19,12 +19,11 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     for key, value in SENSORS.items():
         if value.get("type", "") == "single":
             sensors.append(TdarrSensor(entry, entry.data[value["entry"]], config_entry.options, key))
+
     # Server Library Sensors
-    id = 0
     for value in entry.data["libraries"]:
-        #value.insert(0, id)
         sensors.append(TdarrSensor(entry, value, config_entry.options, "library"))
-        id += 1
+        
     # Server Node Sensors
     for key, value in entry.data["nodes"].items():
         sensors.append(TdarrSensor(entry, value, config_entry.options, "node"))

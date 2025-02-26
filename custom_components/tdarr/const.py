@@ -8,15 +8,15 @@ COORDINATOR = "coordinator"
 APIKEY = "apikey"
 
 SENSORS = {
-    "server": {"type": "single", "entry": "server"},
-    "stats_spacesaved": {"type": "single", "entry": "stats"},
-    "stats_transcodefilesremaining": {"type": "single", "entry": "stats"},
-    "stats_transcodedcount": {"type": "single", "entry": "stats"},
-    "stats_stagedcount": {"type": "single", "entry": "staged"},
-    "stats_healthcount": {"type": "single", "entry": "stats"},
-    "stats_transcodeerrorcount": {"type": "single", "entry": "stats"},
-    "stats_healtherrorcount": {"type": "single", "entry": "stats"},
-    "stats_totalfps": {"type": "single", "entry": "nodes"},
+    "server": {"entry": "server"},
+    "stats_spacesaved": {"entry": "stats"},
+    "stats_transcodefilesremaining": {"entry": "stats"},
+    "stats_transcodedcount": {"entry": "stats"},
+    "stats_stagedcount": {"entry": "staged"},
+    "stats_healthcount": {"entry": "stats"},
+    "stats_transcodeerrorcount": {"entry": "stats"},
+    "stats_healtherrorcount": {"entry": "stats"},
+    "stats_totalfps": {"entry": "nodes"},
 }
 
 SWITCHES = {

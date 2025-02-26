@@ -86,8 +86,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     # Server Status Sensor
     #_LOGGER.debug(entry.data)
     for key, value in SENSORS.items():
-        if value.get("type", "") == "single":
-            sensors.append(TdarrSensor(entry, entry.data[value["entry"]], config_entry.options, key, SERVER_ENTITY_DESCRIPTIONS[key]))
+        sensors.append(TdarrSensor(entry, entry.data[value["entry"]], config_entry.options, key, SERVER_ENTITY_DESCRIPTIONS[key]))
     # Server Library Sensors
     id = 0
     for value in entry.data["libraries"]:

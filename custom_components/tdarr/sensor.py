@@ -169,7 +169,3 @@ class TdarrSensor(
     @property
     def icon(self):
         return SENSORS.get(self.type, {}).get("icon", None)
-    
-    @property
-    def state_class(self):
-        return None

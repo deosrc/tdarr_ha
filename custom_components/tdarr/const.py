@@ -9,7 +9,7 @@ APIKEY = "apikey"
 
 SENSORS = {
     "server": {"type": "single", "entry": "server"},
-    "stats_spacesaved": {"entry": "stats"},
+    "stats_spacesaved": {"type": "single", "entry": "stats"},
     "stats_transcodefilesremaining": {"type": "single", "entry": "stats"},
     "stats_transcodedcount": {"type": "single", "entry": "stats"},
     "stats_stagedcount": {"type": "single", "entry": "staged"},

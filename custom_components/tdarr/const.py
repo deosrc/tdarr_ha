@@ -16,10 +16,7 @@ SENSORS = {
     "stats_healthcount": {"type": "single", "entry": "stats"},
     "stats_transcodeerrorcount": {"type": "single", "entry": "stats"},
     "stats_healtherrorcount": {"type": "single", "entry": "stats"},
-    "node": {},
-    "nodefps": {},
     "stats_totalfps": {"type": "single", "entry": "nodes"},
-    "library": {},
 }
 
 SWITCHES = {

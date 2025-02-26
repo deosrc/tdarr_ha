@@ -3,8 +3,6 @@ import re
 
 from homeassistant.components.sensor import (
     SensorEntity,
-    SensorDeviceClass,
-    SensorStateClass
 )
 
 from . import TdarrEntity

@@ -13,16 +13,16 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     entry = hass.data[DOMAIN][config_entry.entry_id][COORDINATOR]
     switches = []
     for key, value in entry.data["nodes"].items():
-        sw = Switch(entry, value, value["_id"], config_entry.options)
+        sw = TdarrSwitch(entry, value, value["_id"], config_entry.options)
         switches.append(sw)
 
     for key, value in SWITCHES.items():
         _LOGGER.debug(value)
-        switches.append(Switch(entry, entry.data["globalsettings"], value["name"], config_entry.options))
+        switches.append(TdarrSwitch(entry, entry.data["globalsettings"], value["name"], config_entry.options))
 
     async_add_entities(switches, False)
 
-class Switch(TdarrEntity, SwitchEntity):
+class TdarrSwitch(TdarrEntity, SwitchEntity):
     """Define the Switch for turning ignition off/on"""
 
     def __init__(self, coordinator, switch, name, options):

@@ -14,47 +14,47 @@ from .const import DOMAIN, COORDINATOR, SENSORS
 _LOGGER = logging.getLogger(__name__)
 
 SERVER_ENTITY_DESCRIPTIONS = {
-    "server": SensorEntityDescription(
+    SensorEntityDescription(
         key="server",
         icon="mdi:server"
     ),
-    "stats_spacesaved": SensorEntityDescription(
+    SensorEntityDescription(
         key="stats_spacesaved",
         icon="mdi:harddisk",
         native_unit_of_measurement="GB",
         device_class=SensorDeviceClass.DATA_SIZE
     ),
-    "stats_transcodefilesremaining": SensorEntityDescription(
+    SensorEntityDescription(
         key="stats_transcodefilesremaining",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files"
     ),
-    "stats_transcodedcount": SensorEntityDescription(
+    SensorEntityDescription(
         key="stats_transcodedcount",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files"
     ),
-    "stats_stagedcount": SensorEntityDescription(
+    SensorEntityDescription(
         key="stats_stagedcount",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files"
     ),
-    "stats_healthcount": SensorEntityDescription(
+    SensorEntityDescription(
         key="stats_healthcount",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files"
     ),
-    "stats_transcodeerrorcount": SensorEntityDescription(
+    SensorEntityDescription(
         key="stats_transcodeerrorcount",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files"
     ),
-    "stats_healtherrorcount": SensorEntityDescription(
+    SensorEntityDescription(
         key="stats_healtherrorcount",
         icon="mdi:medication-outline",
         native_unit_of_measurement="files"
     ),
-    "stats_totalfps": SensorEntityDescription(
+    SensorEntityDescription(
         key="stats_totalfps",
         icon="mdi:video",
         native_unit_of_measurement="fps"
@@ -68,11 +68,11 @@ LIBRARY_ENTITY_DESCRIPTION = SensorEntityDescription(
 )
 
 NODE_ENTITY_DESCRIPTIONS = {
-    "node": SensorEntityDescription(
+    SensorEntityDescription(
         key="node",
         icon="mdi:server-network-outline",
     ),
-    "nodefps": SensorEntityDescription(
+    SensorEntityDescription(
         key="nodefps",
         icon="mdi:video",
         native_unit_of_measurement="fps"
@@ -85,8 +85,9 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     sensors = []
     # Server Status Sensor
     #_LOGGER.debug(entry.data)
-    for key, value in SENSORS.items():
-        sensors.append(TdarrSensor(entry, entry.data[value["entry"]], config_entry.options, SERVER_ENTITY_DESCRIPTIONS[key]))
+    for description in SERVER_ENTITY_DESCRIPTIONS:
+        legacy_sensor_dict_value = SENSORS[description.key]
+        sensors.append(TdarrSensor(entry, entry.data[legacy_sensor_dict_value["entry"]], config_entry.options, description))
     # Server Library Sensors
     id = 0
     for value in entry.data["libraries"]:
@@ -96,8 +97,8 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     # Server Node Sensors
     fps_count = 0
     for key, value in entry.data["nodes"].items():
-        sensors.append(TdarrSensor(entry, value, config_entry.options, NODE_ENTITY_DESCRIPTIONS["node"]))
-        sensors.append(TdarrSensor(entry, value, config_entry.options, NODE_ENTITY_DESCRIPTIONS["nodefps"]))
+        for description in NODE_ENTITY_DESCRIPTIONS:
+            sensors.append(TdarrSensor(entry, value, config_entry.options, description))
     
 
     async_add_entities(sensors, True)

@@ -1,31 +1,48 @@
 import logging
 import time
 
-from homeassistant.components.switch import SwitchEntity
+from homeassistant.components.switch import (
+    SwitchEntity,
+    SwitchEntityDescription
+)
 
 from . import TdarrEntity
-from .const import DOMAIN, COORDINATOR, SWITCHES
+from .const import DOMAIN, COORDINATOR
 
 _LOGGER = logging.getLogger(__name__)
+
+SERVER_ENTITY_DESCRIPTIONS = {
+    SwitchEntityDescription(
+        key="pauseAll",
+        icon="mdi:pause-circle"
+    ),
+    SwitchEntityDescription(
+        key="ignoreSchedules",
+        icon="mdi:calendar-remove"
+    ),
+}
+
+NODE_PAUSE_ENTITY_DESCRIPTION = SwitchEntityDescription(
+    key="node_pause",
+)
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Add the Switch from the config."""
     entry = hass.data[DOMAIN][config_entry.entry_id][COORDINATOR]
     switches = []
     for key, value in entry.data["nodes"].items():
-        sw = Switch(entry, value, value["_id"], config_entry.options)
+        sw = Switch(entry, value, value["_id"], config_entry.options, NODE_PAUSE_ENTITY_DESCRIPTION)
         switches.append(sw)
 
-    for key, value in SWITCHES.items():
-        _LOGGER.debug(value)
-        switches.append(Switch(entry, entry.data["globalsettings"], value["name"], config_entry.options))
+    for description in SERVER_ENTITY_DESCRIPTIONS:
+        switches.append(Switch(entry, entry.data["globalsettings"], description.key, config_entry.options, description))
 
     async_add_entities(switches, False)
 
 class Switch(TdarrEntity, SwitchEntity):
     """Define the Switch for turning ignition off/on"""
 
-    def __init__(self, coordinator, switch, name, options):
+    def __init__(self, coordinator, switch, name, options, entity_description: SwitchEntityDescription):
         _LOGGER.debug(name)
         if "nodeName" in switch:
             self._device_id = "tdarr_node_" + switch["nodeName"] + "_paused"
@@ -37,6 +54,7 @@ class Switch(TdarrEntity, SwitchEntity):
             self._device_id = "tdarr_node_" + switch["_id"] + "_paused"
         self.switch = switch
         self.coordinator = coordinator
+        self.entity_description = entity_description
         self._state = None
         self.object_name = name
         # Required for HA 2022.7
@@ -54,9 +72,6 @@ class Switch(TdarrEntity, SwitchEntity):
             self.switch["nodePaused"] = True
             self.async_write_ha_state()
 
-
-
-           
     async def async_turn_off(self, **kwargs):
         update = await self.coordinator.hass.async_add_executor_job(
             self.coordinator.tdarr.pauseNode,
@@ -69,7 +84,6 @@ class Switch(TdarrEntity, SwitchEntity):
             self.switch["nodePaused"] = False
             self.async_write_ha_state()
 
-
     @property
     def name(self):
         #_LOGGER.debug(self.switch)
@@ -81,7 +95,6 @@ class Switch(TdarrEntity, SwitchEntity):
             return "tdarr_ignore_schedules"
         else:
             return "tdarr_node_" + self.switch["_id"] + "_paused"
-
 
     @property
     def device_id(self):
@@ -102,12 +115,6 @@ class Switch(TdarrEntity, SwitchEntity):
         for key, value in self.coordinator.data["nodes"].items():
             if value["_id"] == self.switch["_id"]:
                 return value["nodePaused"]
-
-
-
-    @property
-    def icon(self):
-        return SWITCHES.get(self.object_name, {}).get("icon", None)
 
     @property
     def extra_state_attributes(self):

@@ -18,8 +18,3 @@ SENSORS = {
     "stats_healtherrorcount": {"entry": "stats"},
     "stats_totalfps": {"entry": "nodes"},
 }
-
-SWITCHES = {
-    "pauseAll": {"icon": "mdi:pause-circle", "name": "pauseAll", "data": "globalsettings"},
-    "ignoreSchedules": {"icon": "mdi:calendar-remove", "name": "ignoreSchedules", "data": "globalsettings"},
-}

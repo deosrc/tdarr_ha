@@ -23,7 +23,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     # Server Library Sensors
     for value in entry.data["libraries"]:
         sensors.append(TdarrSensor(entry, value, config_entry.options, "library"))
-        
+
     # Server Node Sensors
     for key, value in entry.data["nodes"].items():
         sensors.append(TdarrSensor(entry, value, config_entry.options, "node"))
@@ -97,9 +97,9 @@ class TdarrSensor(
 
         elif self.type == "stats_totalfps":
             fps = 0
-            for key1, value1 in self.coordinator.data["nodes"].items():
-                for key2, value2 in value1.get("workers", {}).items():
-                    fps += value2.get("fps", 0)
+            for _, node_values in self.coordinator.data["nodes"].items():
+                for _, worker_values in node_values.get("workers", {}).items():
+                    fps += worker_values.get("fps", 0)
             return fps
 
     @property

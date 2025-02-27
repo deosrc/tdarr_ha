@@ -16,55 +16,55 @@ _LOGGER = logging.getLogger(__name__)
 SERVER_ENTITY_DESCRIPTIONS = {
     SensorEntityDescription(
         key="server",
-        name="Server Status",
+        translation_key="server",
         icon="mdi:server"
     ),
     SensorEntityDescription(
         key="stats_spacesaved",
-        name="Space Saved",
+        translation_key="stats_spacesaved",
         icon="mdi:harddisk",
         native_unit_of_measurement="GB",
         device_class=SensorDeviceClass.DATA_SIZE
     ),
     SensorEntityDescription(
         key="stats_transcodefilesremaining",
-        name="Transode Remaining",
+        translation_key="stats_transcodefilesremaining",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files"
     ),
     SensorEntityDescription(
         key="stats_transcodedcount",
-        name="Transcoded",
+        translation_key="stats_transcodedcount",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files"
     ),
     SensorEntityDescription(
         key="stats_stagedcount",
-        name="Staged",
+        translation_key="stats_stagedcount",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files"
     ),
     SensorEntityDescription(
         key="stats_healthcount",
-        name="Healthy",
+        translation_key="stats_healthcount",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files"
     ),
     SensorEntityDescription(
         key="stats_transcodeerrorcount",
-        name="Transcode Error",
+        translation_key="stats_transcodeerrorcount",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files"
     ),
     SensorEntityDescription(
         key="stats_healtherrorcount",
-        name="Healthcheck Error",
+        translation_key="stats_healtherrorcount",
         icon="mdi:medication-outline",
         native_unit_of_measurement="files"
     ),
     SensorEntityDescription(
         key="stats_totalfps",
-        name="Total FPS",
+        translation_key="stats_totalfps",
         icon="mdi:video",
         native_unit_of_measurement="fps"
     ),
@@ -72,6 +72,7 @@ SERVER_ENTITY_DESCRIPTIONS = {
 
 LIBRARY_ENTITY_DESCRIPTION = SensorEntityDescription(
     key="library",
+    translation_key="library",
     icon="mdi:folder-multiple",
     native_unit_of_measurement="files"
 )
@@ -79,10 +80,12 @@ LIBRARY_ENTITY_DESCRIPTION = SensorEntityDescription(
 NODE_ENTITY_DESCRIPTIONS = {
     SensorEntityDescription(
         key="node",
+        translation_key="node",
         icon="mdi:server-network-outline",
     ),
     SensorEntityDescription(
         key="nodefps",
+        translation_key="nodefps",
         icon="mdi:video",
         native_unit_of_measurement="fps"
     )
@@ -114,6 +117,9 @@ class TdarrSensor(
     TdarrEntity,
     SensorEntity,
 ):
+    
+    _attr_has_entity_name = True # Required for reading translation_key from EntityDescription
+
     def __init__(self, coordinator, sensor, options, entity_description: SensorEntityDescription):
         self.sensor = sensor
         self.tdarroptions = options

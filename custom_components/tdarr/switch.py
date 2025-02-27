@@ -13,18 +13,19 @@ _LOGGER = logging.getLogger(__name__)
 SERVER_ENTITY_DESCRIPTIONS = {
     SwitchEntityDescription(
         key="pauseAll",
-        name="Pause All",
+        translation_key="pauseAll",
         icon="mdi:pause-circle"
     ),
     SwitchEntityDescription(
         key="ignoreSchedules",
-        name="Ignore Schedules",
+        translation_key="ignoreSchedules",
         icon="mdi:calendar-remove"
     ),
 }
 
 NODE_PAUSE_ENTITY_DESCRIPTION = SwitchEntityDescription(
     key="node_pause",
+    translation_key="node_pause"
 )
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
@@ -45,6 +46,8 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
 class TdarrSwitch(TdarrEntity, SwitchEntity):
     """Define the Switch for turning ignition off/on"""
+
+    _attr_has_entity_name = True # Required for reading translation_key from EntityDescription
 
     def __init__(self, coordinator, switch, name, options, entity_description: SwitchEntityDescription):
         _LOGGER.debug(name)

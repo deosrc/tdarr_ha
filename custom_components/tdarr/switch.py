@@ -1,5 +1,4 @@
 import logging
-import time
 
 from homeassistant.components.switch import (
     SwitchEntity,
@@ -14,10 +13,12 @@ _LOGGER = logging.getLogger(__name__)
 SERVER_ENTITY_DESCRIPTIONS = {
     SwitchEntityDescription(
         key="pauseAll",
+        name="Pause All",
         icon="mdi:pause-circle"
     ),
     SwitchEntityDescription(
         key="ignoreSchedules",
+        name="Ignore Schedules",
         icon="mdi:calendar-remove"
     ),
 }

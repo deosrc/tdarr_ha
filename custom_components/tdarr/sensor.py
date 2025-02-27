@@ -16,46 +16,55 @@ _LOGGER = logging.getLogger(__name__)
 SERVER_ENTITY_DESCRIPTIONS = {
     SensorEntityDescription(
         key="server",
+        name="Server Status",
         icon="mdi:server"
     ),
     SensorEntityDescription(
         key="stats_spacesaved",
+        name="Space Saved",
         icon="mdi:harddisk",
         native_unit_of_measurement="GB",
         device_class=SensorDeviceClass.DATA_SIZE
     ),
     SensorEntityDescription(
         key="stats_transcodefilesremaining",
+        name="Transode Remaining",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files"
     ),
     SensorEntityDescription(
         key="stats_transcodedcount",
+        name="Transcoded",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files"
     ),
     SensorEntityDescription(
         key="stats_stagedcount",
+        name="Staged",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files"
     ),
     SensorEntityDescription(
         key="stats_healthcount",
+        name="Healthy",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files"
     ),
     SensorEntityDescription(
         key="stats_transcodeerrorcount",
+        name="Transcode Error",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files"
     ),
     SensorEntityDescription(
         key="stats_healtherrorcount",
+        name="Healthcheck Error",
         icon="mdi:medication-outline",
         native_unit_of_measurement="files"
     ),
     SensorEntityDescription(
         key="stats_totalfps",
+        name="Total FPS",
         icon="mdi:video",
         native_unit_of_measurement="fps"
     ),

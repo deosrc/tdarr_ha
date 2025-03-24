@@ -1,6 +1,7 @@
 from dataclasses import replace
 import logging
 
+from homeassistant.core import callback
 from homeassistant.components.switch import (
     SwitchEntity,
     SwitchEntityDescription
@@ -69,7 +70,6 @@ class TdarrSwitch(TdarrEntity, SwitchEntity):
         self.switch = switch
         self.coordinator = coordinator
         self.entity_description = entity_description
-        self._state = None
         self.object_name = name
         # Required for HA 2022.7
         self.coordinator_context = object()
@@ -88,22 +88,20 @@ class TdarrSwitch(TdarrEntity, SwitchEntity):
         )
 
         if update == "OK":
-            self._state = paused
-            self.switch["nodePaused"] = paused
-            self.async_write_ha_state()
-
-    @property
-    def is_on(self):
-        if self._state == True:
-            self._state = None
-            return True
-        elif self._state == False:
-            self._state = None
-            return False
+            self._attr_is_on = paused 
+            self.async_write_ha_state() 
+            await self.coordinator.async_request_refresh() 
+ 
+    @callback 
+    def _handle_coordinator_update(self) -> None: 
+        """Handle updated data from the coordinator.""" 
         if  self.object_name == "pauseAll":
-            return self.coordinator.data["globalsettings"]["pauseAllNodes"]
+            self._attr_is_on = self.coordinator.data["globalsettings"]["pauseAllNodes"]
         elif self.object_name == "ignoreSchedules":
-            return self.coordinator.data["globalsettings"]["ignoreSchedules"]
-        for key, value in self.coordinator.data["nodes"].items():
-            if value["_id"] == self.switch["_id"]:
-                return value["nodePaused"]
+            self._attr_is_on = self.coordinator.data["globalsettings"]["ignoreSchedules"]
+        else:
+            for _, value in self.coordinator.data["nodes"].items():
+                if value["_id"] == self.switch["_id"]:
+                    self._attr_is_on = value["nodePaused"]
+        self.async_write_ha_state()
+

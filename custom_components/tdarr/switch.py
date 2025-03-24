@@ -7,7 +7,10 @@ from homeassistant.components.switch import (
     SwitchEntityDescription
 )
 
-from . import TdarrEntity
+from . import (
+    TdarrServerEntity,
+    TdarrNodeEntity,
+)
 from .const import DOMAIN, COORDINATOR
 
 _LOGGER = logging.getLogger(__name__)
@@ -55,13 +58,14 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     async_add_entities(switches, False)
 
-class TdarrServerSwitch(TdarrEntity, SwitchEntity):
+class TdarrServerSwitch(TdarrServerEntity, SwitchEntity):
     """A Tdarr server level switch"""
 
     _attr_has_entity_name = True # Required for reading translation_key from EntityDescription
 
     def __init__(self, coordinator, options, entity_description: SwitchEntityDescription):
         _LOGGER.info("Creating server level switch %s", entity_description.key)
+        super().__init__(coordinator, entity_description)
 
         if entity_description.key == "pauseAll":
             self._device_id = "tdarr_pause_all"
@@ -70,8 +74,6 @@ class TdarrServerSwitch(TdarrEntity, SwitchEntity):
         else:
             raise NotImplementedError(f"Unknown server switch key {entity_description.key}")
         
-        self.coordinator = coordinator
-        self.entity_description = entity_description
         # Required for HA 2022.7
         self.coordinator_context = object()
 
@@ -105,23 +107,16 @@ class TdarrServerSwitch(TdarrEntity, SwitchEntity):
             
         self.async_write_ha_state()
 
-class TdarrNodeSwitch(TdarrEntity, SwitchEntity):
+class TdarrNodeSwitch(TdarrNodeEntity, SwitchEntity):
     """A Tdarr node level switch"""
 
     _attr_has_entity_name = True # Required for reading translation_key from EntityDescription
 
     def __init__(self, coordinator, node_id, options, entity_description: SwitchEntityDescription):
         _LOGGER.info("Creating node %s level switch %s", node_id, entity_description.key)
-        self._device_id = f"tdarr_node_{node_id}_{entity_description.key}"
-        self.coordinator = coordinator
-        self.entity_description = entity_description
-        self.node_id = node_id
+        super().__init__(coordinator, node_id, entity_description)
         # Required for HA 2022.7
         self.coordinator_context = object()
-
-    @property
-    def node_data(self):
-        return self.coordinator.data["nodes"][self.node_id]
 
     async def async_turn_on(self, **kwargs):
         return await self.async_set_state(True)

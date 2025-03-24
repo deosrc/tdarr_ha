@@ -96,9 +96,9 @@ class TdarrServerSwitch(TdarrEntity, SwitchEntity):
     @callback 
     def _handle_coordinator_update(self) -> None: 
         """Handle updated data from the coordinator.""" 
-        if  self.object_name == "pauseAll":
+        if  self.entity_description.key == "pauseAll":
             self._attr_is_on = self.coordinator.data["globalsettings"]["pauseAllNodes"]
-        elif self.object_name == "ignoreSchedules":
+        elif self.entity_description.key == "ignoreSchedules":
             self._attr_is_on = self.coordinator.data["globalsettings"]["ignoreSchedules"]
         else:
             raise NotImplementedError(f"Unknown server switch key {self.entity_description.key}")

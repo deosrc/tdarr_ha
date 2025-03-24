@@ -14,12 +14,12 @@ _LOGGER = logging.getLogger(__name__)
 SERVER_ENTITY_DESCRIPTIONS = {
     SwitchEntityDescription(
         key="pauseAll",
-        translation_key="pauseAll",
+        translation_key="pause_all",
         icon="mdi:pause-circle"
     ),
     SwitchEntityDescription(
         key="ignoreSchedules",
-        translation_key="ignoreSchedules",
+        translation_key="ignore_schedules",
         icon="mdi:calendar-remove"
     ),
 }

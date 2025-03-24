@@ -70,10 +70,10 @@
             }
         },
         "switch": {
-            "pauseAll": {
+            "pause_all": {
                 "name": "Pause All"
             },
-            "ignoreSchedules": {
+            "ignore_schedules": {
                 "name": "Ignore Schedules"
             },
             "node_pause": {

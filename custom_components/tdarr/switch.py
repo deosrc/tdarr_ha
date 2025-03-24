@@ -93,10 +93,6 @@ class TdarrSwitch(TdarrEntity, SwitchEntity):
             self.async_write_ha_state()
 
     @property
-    def device_id(self):
-        return self.device_id
-
-    @property
     def is_on(self):
         if self._state == True:
             self._state = None

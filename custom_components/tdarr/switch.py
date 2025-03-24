@@ -75,27 +75,21 @@ class TdarrSwitch(TdarrEntity, SwitchEntity):
         self.coordinator_context = object()
 
     async def async_turn_on(self, **kwargs):
-        update = await self.coordinator.hass.async_add_executor_job(
-            self.coordinator.tdarr.pauseNode,
-            self.object_name,
-            True
-        )
-
-        if update == "OK":
-            self._state = True
-            self.switch["nodePaused"] = True
-            self.async_write_ha_state()
+        return await self.async_set_paused(True)
 
     async def async_turn_off(self, **kwargs):
+        return await self.async_set_paused(False)
+
+    async def async_set_paused(self, paused: bool):
         update = await self.coordinator.hass.async_add_executor_job(
             self.coordinator.tdarr.pauseNode,
             self.object_name,
-            False
+            paused
         )
 
         if update == "OK":
-            self._state = False
-            self.switch["nodePaused"] = False
+            self._state = paused
+            self.switch["nodePaused"] = paused
             self.async_write_ha_state()
 
     @property

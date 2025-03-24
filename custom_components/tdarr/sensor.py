@@ -1,3 +1,4 @@
+from dataclasses import replace
 import logging
 import re
 
@@ -103,11 +104,23 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     # Server Library Sensors
     for value in entry.data["libraries"]:
-        sensors.append(TdarrSensor(entry, value, config_entry.options, LIBRARY_ENTITY_DESCRIPTION))
+        description = replace(
+            LIBRARY_ENTITY_DESCRIPTION,
+            translation_placeholders={
+                "library_name": value["name"]
+            }
+        )
+        sensors.append(TdarrSensor(entry, value, config_entry.options, description))
 
     # Server Node Sensors
     for _, value in entry.data["nodes"].items():
         for description in NODE_ENTITY_DESCRIPTIONS:
+            description = replace(
+                description,
+                translation_placeholders={
+                    "node_name": value["nodeName"]
+                }
+            )
             sensors.append(TdarrSensor(entry, value, config_entry.options, description))
 
     async_add_entities(sensors, True)

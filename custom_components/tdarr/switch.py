@@ -1,3 +1,4 @@
+from dataclasses import replace
 import logging
 
 from homeassistant.components.switch import (
@@ -39,7 +40,13 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     # Node Switches
     for _, value in entry.data["nodes"].items():
-        sw = TdarrSwitch(entry, value, value["_id"], config_entry.options, NODE_PAUSE_ENTITY_DESCRIPTION)
+        description = replace(
+            NODE_PAUSE_ENTITY_DESCRIPTION,
+            translation_placeholders={
+                "node_name": value["nodeName"]
+            }
+        )
+        sw = TdarrSwitch(entry, value, value["_id"], config_entry.options, description)
         switches.append(sw)
 
     async_add_entities(switches, False)

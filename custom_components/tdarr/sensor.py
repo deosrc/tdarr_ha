@@ -227,7 +227,3 @@ class TdarrSensor(
                         qualities[quality["name"]] = quality["value"]
                     data["Resolutions"] = qualities
                     return data
-
-    @property
-    def device_id(self):
-        return self.device_id

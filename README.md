@@ -21,9 +21,9 @@ Use HACS and add as a custom repo. Once the integration is installed go to your 
 
 ## Screenshots
 
-![Paused Sensor](https://github.com/itchannel/screenshots/raw/main/tdarr_node_paused.jpg)
+![Switches to control paused state](./screenshots/node_controls.jpg)
 
-![Library Sensor](https://github.com/itchannel/screenshots/raw/main/tdarr_library_sensor.jpg)
+![Library sensor](./screenshots/library_sensor.jpg)
 
 ## Additional Information
 

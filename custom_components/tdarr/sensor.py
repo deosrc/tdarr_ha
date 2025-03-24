@@ -201,24 +201,5 @@ class TdarrSensor(
                     return data
 
     @property
-    def name(self):
-        if self.entity_description.key == "server":
-            return "tdarr_server"
-        elif self.entity_description.key == "node":
-            if "nodeName" in self.sensor:
-                return "tdarr_node_" + self.sensor.get("nodeName", "Unknown")
-            else:
-                return "tdarr_node_" + self.sensor.get("_id", "Unknown")
-        elif self.entity_description.key == "nodefps":
-            if "nodeName" in self.sensor:
-                return "tdarr_node_" + self.sensor.get("nodeName", "Unknown") + "_fps"
-            else:
-                return "tdarr_node_" + self.sensor.get("_id", "Unknown") + "_fps"
-        elif self.entity_description.key == "library":
-            return "tdarr_library_" + self.sensor["name"]
-        else:
-            return "tdarr_" + self.entity_description.key
-
-    @property
     def device_id(self):
         return self.device_id

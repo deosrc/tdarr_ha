@@ -88,18 +88,6 @@ class TdarrSwitch(TdarrEntity, SwitchEntity):
             self.async_write_ha_state()
 
     @property
-    def name(self):
-        #_LOGGER.debug(self.switch)
-        if "nodeName" in self.switch:
-            return "tdarr_node_" + self.switch["nodeName"] + "_paused"
-        elif self.object_name == "pauseAll":
-            return "tdarr_pause_all"
-        elif self.object_name == "ignoreSchedules": 
-            return "tdarr_ignore_schedules"
-        else:
-            return "tdarr_node_" + self.switch["_id"] + "_paused"
-
-    @property
     def device_id(self):
         return self.device_id
 

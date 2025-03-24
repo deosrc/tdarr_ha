@@ -214,23 +214,16 @@ class TdarrDataUpdateCoordinator(DataUpdateCoordinator):
 
 class TdarrEntity(CoordinatorEntity):
     def __init__(
-            self, *, device_id: str, name: str, coordinator: TdarrDataUpdateCoordinator
+            self, *, device_id: str, coordinator: TdarrDataUpdateCoordinator
     ):
         """Initialize the entity."""
         super().__init__(coordinator)
         self._device_id = device_id
-        self._name = name
 
     async def async_added_to_hass(self) -> None:
         """When entity is added to hass."""
         await super().async_added_to_hass()
         self._handle_coordinator_update()
-
-    @property
-    def name(self):
-        """Return the name of the entity."""
-        #_LOGGER.debug(self._name)
-        return self._name
 
     @property
     def unique_id(self):

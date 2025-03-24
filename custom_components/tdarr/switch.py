@@ -58,15 +58,13 @@ class TdarrServerSwitch(TdarrEntity, SwitchEntity):
     _attr_has_entity_name = True # Required for reading translation_key from EntityDescription
 
     def __init__(self, coordinator, switch, name, options, entity_description: SwitchEntityDescription):
-        _LOGGER.debug(name)
-        if "nodeName" in switch:
-            self._device_id = "tdarr_node_" + switch["nodeName"] + "_paused"
-        elif name == "pauseAll":
+        _LOGGER.info("Creating server level switch %s", entity_description.key)
+        if name == "pauseAll":
             self._device_id = "tdarr_pause_all"
         elif name == "ignoreSchedules":
             self._device_id = "tdarr_ignore_schedules"
         else:
-            self._device_id = "tdarr_node_" + switch["_id"] + "_paused"
+            raise NotImplementedError(f"Unknown switch key %s", entity_description.key)
         self.switch = switch
         self.coordinator = coordinator
         self.entity_description = entity_description
@@ -99,10 +97,7 @@ class TdarrServerSwitch(TdarrEntity, SwitchEntity):
             self._attr_is_on = self.coordinator.data["globalsettings"]["pauseAllNodes"]
         elif self.object_name == "ignoreSchedules":
             self._attr_is_on = self.coordinator.data["globalsettings"]["ignoreSchedules"]
-        else:
-            for _, value in self.coordinator.data["nodes"].items():
-                if value["_id"] == self.switch["_id"]:
-                    self._attr_is_on = value["nodePaused"]
+            
         self.async_write_ha_state()
 
 class TdarrNodeSwitch(TdarrEntity, SwitchEntity):
@@ -110,20 +105,16 @@ class TdarrNodeSwitch(TdarrEntity, SwitchEntity):
 
     _attr_has_entity_name = True # Required for reading translation_key from EntityDescription
 
-    def __init__(self, coordinator, switch, name, options, entity_description: SwitchEntityDescription):
-        _LOGGER.debug(name)
+    def __init__(self, coordinator, switch, node_id, options, entity_description: SwitchEntityDescription):
+        _LOGGER.info("Creating node %s level switch %s", node_id, entity_description.key)
         if "nodeName" in switch:
             self._device_id = "tdarr_node_" + switch["nodeName"] + "_paused"
-        elif name == "pauseAll":
-            self._device_id = "tdarr_pause_all"
-        elif name == "ignoreSchedules":
-            self._device_id = "tdarr_ignore_schedules"
         else:
             self._device_id = "tdarr_node_" + switch["_id"] + "_paused"
         self.switch = switch
         self.coordinator = coordinator
         self.entity_description = entity_description
-        self.object_name = name
+        self.node_id = node_id
         # Required for HA 2022.7
         self.coordinator_context = object()
 
@@ -136,7 +127,7 @@ class TdarrNodeSwitch(TdarrEntity, SwitchEntity):
     async def async_set_paused(self, paused: bool):
         update = await self.coordinator.hass.async_add_executor_job(
             self.coordinator.tdarr.pauseNode,
-            self.object_name,
+            self.node_id,
             paused
         )
 
@@ -147,14 +138,9 @@ class TdarrNodeSwitch(TdarrEntity, SwitchEntity):
  
     @callback 
     def _handle_coordinator_update(self) -> None: 
-        """Handle updated data from the coordinator.""" 
-        if  self.object_name == "pauseAll":
-            self._attr_is_on = self.coordinator.data["globalsettings"]["pauseAllNodes"]
-        elif self.object_name == "ignoreSchedules":
-            self._attr_is_on = self.coordinator.data["globalsettings"]["ignoreSchedules"]
-        else:
-            for _, value in self.coordinator.data["nodes"].items():
-                if value["_id"] == self.switch["_id"]:
-                    self._attr_is_on = value["nodePaused"]
+        """Handle updated data from the coordinator."""
+        for _, value in self.coordinator.data["nodes"].items():
+            if value["_id"] == self.switch["_id"]:
+                self._attr_is_on = value["nodePaused"]
         self.async_write_ha_state()
 

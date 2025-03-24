@@ -30,12 +30,15 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     """Add the Switch from the config."""
     entry = hass.data[DOMAIN][config_entry.entry_id][COORDINATOR]
     switches = []
+
+    # Server Switches
+    for description in SERVER_ENTITY_DESCRIPTIONS:
+        switches.append(TdarrSwitch(entry, entry.data["globalsettings"], description.key, config_entry.options, description))
+
+    # Node Switches
     for _, value in entry.data["nodes"].items():
         sw = TdarrSwitch(entry, value, value["_id"], config_entry.options, NODE_PAUSE_ENTITY_DESCRIPTION)
         switches.append(sw)
-
-    for description in SERVER_ENTITY_DESCRIPTIONS:
-        switches.append(TdarrSwitch(entry, entry.data["globalsettings"], description.key, config_entry.options, description))
 
     async_add_entities(switches, False)
 

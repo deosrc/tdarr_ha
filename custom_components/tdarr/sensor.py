@@ -83,19 +83,20 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     """Add the Entities from the config."""
     entry = hass.data[DOMAIN][config_entry.entry_id][COORDINATOR]
     sensors = []
-    # Server Status Sensor
-    #_LOGGER.debug(entry.data)
+    
+    # Server Status Sensors
     for description in SERVER_ENTITY_DESCRIPTIONS:
         legacy_sensor_dict_value = SENSORS[description.key]
         sensors.append(TdarrSensor(entry, entry.data[legacy_sensor_dict_value["entry"]], config_entry.options, description))
+
     # Server Library Sensors
     for value in entry.data["libraries"]:
         sensors.append(TdarrSensor(entry, value, config_entry.options, LIBRARY_ENTITY_DESCRIPTION))
+
     # Server Node Sensors
-    for key, value in entry.data["nodes"].items():
+    for _, value in entry.data["nodes"].items():
         for description in NODE_ENTITY_DESCRIPTIONS:
             sensors.append(TdarrSensor(entry, value, config_entry.options, description))
-    
 
     async_add_entities(sensors, True)
 
@@ -105,7 +106,6 @@ class TdarrSensor(
     SensorEntity,
 ):
     def __init__(self, coordinator, sensor, options, entity_description: SensorEntityDescription):
-
         self.sensor = sensor
         self.tdarroptions = options
         self.entity_description = entity_description

@@ -42,7 +42,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         switches.append(TdarrServerSwitch(entry, config_entry.options, description))
 
     # Node Switches
-    for _, value in entry.data["nodes"].items():
+    for key, value in entry.data["nodes"].items():
         for d in NODE_ENTITY_DESCRIPTIONS:
             description = replace(
                 d,
@@ -50,7 +50,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                     "node_name": value["nodeName"]
                 }
             )
-            sw = TdarrNodeSwitch(entry, value, value["_id"], config_entry.options, description)
+            sw = TdarrNodeSwitch(entry, key, config_entry.options, description)
             switches.append(sw)
 
     async_add_entities(switches, False)
@@ -110,15 +110,18 @@ class TdarrNodeSwitch(TdarrEntity, SwitchEntity):
 
     _attr_has_entity_name = True # Required for reading translation_key from EntityDescription
 
-    def __init__(self, coordinator, switch, node_id, options, entity_description: SwitchEntityDescription):
+    def __init__(self, coordinator, node_id, options, entity_description: SwitchEntityDescription):
         _LOGGER.info("Creating node %s level switch %s", node_id, entity_description.key)
         self._device_id = f"tdarr_node_{node_id}_{entity_description.key}"
-        self.switch = switch
         self.coordinator = coordinator
         self.entity_description = entity_description
         self.node_id = node_id
         # Required for HA 2022.7
         self.coordinator_context = object()
+
+    @property
+    def node_data(self):
+        return self.coordinator.data["nodes"][self.node_id]
 
     async def async_turn_on(self, **kwargs):
         return await self.async_set_state(True)
@@ -144,8 +147,6 @@ class TdarrNodeSwitch(TdarrEntity, SwitchEntity):
     @callback 
     def _handle_coordinator_update(self) -> None: 
         """Handle updated data from the coordinator."""
-        for _, value in self.coordinator.data["nodes"].items():
-            if value["_id"] == self.switch["_id"]:
-                self._attr_is_on = value["nodePaused"]
+        self._attr_is_on = self.node_data["nodePaused"]
         self.async_write_ha_state()
 

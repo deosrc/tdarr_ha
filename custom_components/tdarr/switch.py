@@ -26,8 +26,8 @@ SERVER_ENTITY_DESCRIPTIONS = {
 }
 
 NODE_PAUSE_ENTITY_DESCRIPTION = SwitchEntityDescription(
-    key="node_pause",
-    translation_key="node_pause"
+    key="paused",
+    translation_key="node_paused"
 )
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
@@ -73,12 +73,12 @@ class TdarrServerSwitch(TdarrEntity, SwitchEntity):
         self.coordinator_context = object()
 
     async def async_turn_on(self, **kwargs):
-        return await self.async_set_paused(True)
+        return await self.async_set_state(True)
 
     async def async_turn_off(self, **kwargs):
-        return await self.async_set_paused(False)
+        return await self.async_set_state(False)
 
-    async def async_set_paused(self, paused: bool):
+    async def async_set_state(self, paused: bool):
         update = await self.coordinator.hass.async_add_executor_job(
             self.coordinator.tdarr.pauseNode,
             self.entity_description.key,
@@ -109,10 +109,7 @@ class TdarrNodeSwitch(TdarrEntity, SwitchEntity):
 
     def __init__(self, coordinator, switch, node_id, options, entity_description: SwitchEntityDescription):
         _LOGGER.info("Creating node %s level switch %s", node_id, entity_description.key)
-        if "nodeName" in switch:
-            self._device_id = "tdarr_node_" + switch["nodeName"] + "_paused"
-        else:
-            self._device_id = "tdarr_node_" + switch["_id"] + "_paused"
+        self._device_id = f"tdarr_node_{node_id}_{entity_description.key}"
         self.switch = switch
         self.coordinator = coordinator
         self.entity_description = entity_description
@@ -121,12 +118,15 @@ class TdarrNodeSwitch(TdarrEntity, SwitchEntity):
         self.coordinator_context = object()
 
     async def async_turn_on(self, **kwargs):
-        return await self.async_set_paused(True)
+        return await self.async_set_state(True)
 
     async def async_turn_off(self, **kwargs):
-        return await self.async_set_paused(False)
+        return await self.async_set_state(False)
 
-    async def async_set_paused(self, paused: bool):
+    async def async_set_state(self, paused: bool):
+        if self.entity_description.key != 'paused':
+            raise NotImplementedError(f"Unknown node switch type {self.entity_description.key}")
+        
         update = await self.coordinator.hass.async_add_executor_job(
             self.coordinator.tdarr.pauseNode,
             self.node_id,

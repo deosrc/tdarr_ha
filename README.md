@@ -1,15 +1,18 @@
 # Tdarr Home Assistant Integration
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg?style=for-the-badge)](https://github.com/custom-components/hacs)
+This is a fork of [itchannel/tdarr_ha](https://github.com/itchannel/tdarr_ha) aiming to make the intergration more user friendly and make it easier to maintain and extend.
 
-[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/itchannel)
+Thanks to itchannel for their initial work on this integration. "Buy them a coffee" link is available on their repository linked above.
 
 ## Install
+
 Use HACS and add as a custom repo. Once the integration is installed go to your integrations and follow the configuration options below:
-- Tdarr Server IP
+
+- Tdarr Server IP or hostname
 - Tdarr Port (Prefilled to Tdarr default port 8265)
 
 ## Currently Supported
+
 - Server status
 - Node information
 - Node FPS
@@ -17,9 +20,10 @@ Use HACS and add as a custom repo. Once the integration is installed go to your 
 - Switches to pause/unpause a node
 
 ## Screenshots
-![Paused Sensor](https://github.com/itchannel/screenshots/raw/main/tdarr_node_paused.jpg)
 
-![Library Sensor](https://github.com/itchannel/screenshots/raw/main/tdarr_library_sensor.jpg)
+![Switches to control paused state](./screenshots/node_controls.jpg)
+
+![Library sensor](./screenshots/library_sensor.jpg)
 
 ## Additional Information
 
@@ -27,5 +31,17 @@ The integration will automatically add new nodes as they come online. Old nodes 
 
 All sensors display any available additional info in the sensor attributes section. This information can be used by you to create more verbose sensors using Home Assistant templates. 
 
+## Contributing
 
-This is a custom integration I have created to allow me to use HA to control my nodes such as pausing/unpausing transcoding depending on how much excess solar electricity I have. 
+### Development
+
+Files are included in the repository for development in VSCode:
+
+1. Clone the repository
+2. Open in VSCode
+3. Ensure you have the devcontainers extension installed, then press F1 > Reopen in devcontainer
+4. To run Home Assistant with the component already installed:
+    1. F1 > Run task
+    2. Run Home Assistant
+
+**NOTE:** Breakpoints are not working with the current configuration.

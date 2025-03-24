@@ -89,13 +89,9 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         legacy_sensor_dict_value = SENSORS[description.key]
         sensors.append(TdarrSensor(entry, entry.data[legacy_sensor_dict_value["entry"]], config_entry.options, description))
     # Server Library Sensors
-    id = 0
     for value in entry.data["libraries"]:
-        #value.insert(0, id)
         sensors.append(TdarrSensor(entry, value, config_entry.options, LIBRARY_ENTITY_DESCRIPTION))
-        id += 1
     # Server Node Sensors
-    fps_count = 0
     for key, value in entry.data["nodes"].items():
         for description in NODE_ENTITY_DESCRIPTIONS:
             sensors.append(TdarrSensor(entry, value, config_entry.options, description))
@@ -134,77 +130,75 @@ class TdarrSensor(
         # Required for HA 2022.7
         self.coordinator_context = object()
 
+    @property 
+    def native_value(self):
+        if self.entity_description.key == "server":
+            return self.coordinator.data.get("server", {}).get("status")
+        elif self.entity_description.key == "node":
+            return "Online"
+        elif self.entity_description.key == "nodefps":
+            fps = 0
+            for key1, value in self.coordinator.data.get("nodes", {}).get(self.sensor["_id"], {}).get("workers", {}).items():
+                fps += value.get("fps", 0)
+            return fps
+        elif self.entity_description.key == "stats_spacesaved":
+            return round(self.coordinator.data.get("stats",{}).get("sizeDiff", 0), 2)
+        elif self.entity_description.key == "stats_transcodefilesremaining":
+            return self.coordinator.data.get("stats",{}).get("table1Count", 0)
+        elif self.entity_description.key == "stats_transcodedcount":
+            return self.coordinator.data.get("stats",{}).get("table2Count", 0)
+        elif self.entity_description.key == "stats_stagedcount":
+            return self.coordinator.data.get("staged",{}).get("totalCount", 0)
+        elif self.entity_description.key == "stats_healthcount":
+            return self.coordinator.data.get("stats",{}).get("table4Count", 0)
+        elif self.entity_description.key == "stats_transcodeerrorcount":
+            return self.coordinator.data.get("stats",{}).get("table3Count", 0)
+        elif self.entity_description.key == "stats_healtherrorcount":
+            return self.coordinator.data.get("stats",{}).get("table6Count", 0)
+        elif self.entity_description.key == "library":
+            libraries = self.coordinator.data.get("libraries",{})
+            for library in libraries:
+                if library["name"] == self.sensor["name"]:
+                    _LOGGER.debug(library)
+                    return library["totalFiles"]
 
-    def get_value(self, ftype):
-        if ftype == "state":
-            if self.entity_description.key == "server":
-                return self.coordinator.data.get("server", {}).get("status")
-            elif self.entity_description.key == "node":
-                return "Online"
-            elif self.entity_description.key == "nodefps":
-                fps = 0
-                for key1, value in self.coordinator.data.get("nodes", {}).get(self.sensor["_id"], {}).get("workers", {}).items():
-                    fps += value.get("fps", 0)
-                return fps
-            elif self.entity_description.key == "stats_spacesaved":
-                return round(self.coordinator.data.get("stats",{}).get("sizeDiff", 0), 2)
-            elif self.entity_description.key == "stats_transcodefilesremaining":
-                return self.coordinator.data.get("stats",{}).get("table1Count", 0)
-            elif self.entity_description.key == "stats_transcodedcount":
-                return self.coordinator.data.get("stats",{}).get("table2Count", 0)
-            elif self.entity_description.key == "stats_stagedcount":
-                return self.coordinator.data.get("staged",{}).get("totalCount", 0)
-            elif self.entity_description.key == "stats_healthcount":
-                return self.coordinator.data.get("stats",{}).get("table4Count", 0)
-            elif self.entity_description.key == "stats_transcodeerrorcount":
-                return self.coordinator.data.get("stats",{}).get("table3Count", 0)
-            elif self.entity_description.key == "stats_healtherrorcount":
-                return self.coordinator.data.get("stats",{}).get("table6Count", 0)
-            elif self.entity_description.key == "library":
-                libraries = self.coordinator.data.get("libraries",{})
-                for library in libraries:
-                    if library["name"] == self.sensor["name"]:
-                        _LOGGER.debug(library)
-                        return library["totalFiles"]
+        elif self.entity_description.key == "stats_totalfps":
+            fps = 0
+            for _, node_values in self.coordinator.data["nodes"].items():
+                for _, worker_values in node_values.get("workers", {}).items():
+                    fps += worker_values.get("fps", 0)
+            return fps
 
-            elif self.entity_description.key == "stats_totalfps":
-                fps = 0
-                for key1, value1 in self.coordinator.data["nodes"].items():
-                    for key2, value2 in value1.get("workers", {}).items():
-                        fps += value2.get("fps", 0)
-                return fps
-
-        if ftype == "attributes":
-            if self.entity_description.key == "server":
-                return self.coordinator.data.get("server", {})
-            elif self.entity_description.key == "node":
-                return self.coordinator.data.get("nodes",{}).get(self.sensor["_id"], {})
-            elif self.entity_description.key == "stats_spacesaved":
-                return self.coordinator.data.get("stats", {})
-            elif self.entity_description.key == "library":
-                libraries = self.coordinator.data.get("libraries",{})
-                for library in libraries:
-                    if library["name"] == self.sensor["name"]:
-                        data = {}
-                        data["Total Files"] = library["totalFiles"]
-                        data["Number of Transcodes"] = library["totalTranscodeCount"]
-                        data["Space Saved (GB)"] = round(library["sizeDiff"], 0)
-                        data["Number of Health Checks"] = library["totalHealthCheckCount"]
-                        codecs = {}
-                        for codec in library.get("video", {}).get("codecs", {}):
-                            codecs[codec["name"]] = codec["value"]
-                        data["Codecs"] = codecs
-                        containers = {}
-                        for container in library.get("video", {}).get("containers", {}):
-                            containers[container["name"]] = container["value"]
-                        data["Containers"] = containers
-                        qualities = {}
-                        for quality in library.get("video", {}).get("resolutions", {}):
-                            qualities[quality["name"]] = quality["value"]
-                        data["Resolutions"] = qualities
-                        return data
-            else:
-                return None
+    @property
+    def extra_state_attributes(self):
+        if self.entity_description.key == "server":
+            return self.coordinator.data.get("server", {})
+        elif self.entity_description.key == "node":
+            return self.coordinator.data.get("nodes",{}).get(self.sensor["_id"], {})
+        elif self.entity_description.key == "stats_spacesaved":
+            return self.coordinator.data.get("stats", {})
+        elif self.entity_description.key == "library":
+            libraries = self.coordinator.data.get("libraries",{})
+            for library in libraries:
+                if library["name"] == self.sensor["name"]:
+                    data = {}
+                    data["Total Files"] = library["totalFiles"]
+                    data["Number of Transcodes"] = library["totalTranscodeCount"]
+                    data["Space Saved (GB)"] = round(library["sizeDiff"], 0)
+                    data["Number of Health Checks"] = library["totalHealthCheckCount"]
+                    codecs = {}
+                    for codec in library.get("video", {}).get("codecs", {}):
+                        codecs[codec["name"]] = codec["value"]
+                    data["Codecs"] = codecs
+                    containers = {}
+                    for container in library.get("video", {}).get("containers", {}):
+                        containers[container["name"]] = container["value"]
+                    data["Containers"] = containers
+                    qualities = {}
+                    for quality in library.get("video", {}).get("resolutions", {}):
+                        qualities[quality["name"]] = quality["value"]
+                    data["Resolutions"] = qualities
+                    return data
 
     @property
     def name(self):
@@ -225,19 +219,6 @@ class TdarrSensor(
         else:
             return "tdarr_" + self.entity_description.key
 
-
     @property
     def device_id(self):
         return self.device_id
-    
-    @property 
-    def native_value(self):
-        return self.get_value("state")
-
-    @property
-    def extra_state_attributes(self):
-        return self.get_value("attributes")
-    
-    @property
-    def state_class(self):
-        return None

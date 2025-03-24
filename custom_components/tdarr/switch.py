@@ -30,16 +30,16 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     """Add the Switch from the config."""
     entry = hass.data[DOMAIN][config_entry.entry_id][COORDINATOR]
     switches = []
-    for key, value in entry.data["nodes"].items():
-        sw = Switch(entry, value, value["_id"], config_entry.options, NODE_PAUSE_ENTITY_DESCRIPTION)
+    for _, value in entry.data["nodes"].items():
+        sw = TdarrSwitch(entry, value, value["_id"], config_entry.options, NODE_PAUSE_ENTITY_DESCRIPTION)
         switches.append(sw)
 
     for description in SERVER_ENTITY_DESCRIPTIONS:
-        switches.append(Switch(entry, entry.data["globalsettings"], description.key, config_entry.options, description))
+        switches.append(TdarrSwitch(entry, entry.data["globalsettings"], description.key, config_entry.options, description))
 
     async_add_entities(switches, False)
 
-class Switch(TdarrEntity, SwitchEntity):
+class TdarrSwitch(TdarrEntity, SwitchEntity):
     """Define the Switch for turning ignition off/on"""
 
     def __init__(self, coordinator, switch, name, options, entity_description: SwitchEntityDescription):
@@ -115,7 +115,3 @@ class Switch(TdarrEntity, SwitchEntity):
         for key, value in self.coordinator.data["nodes"].items():
             if value["_id"] == self.switch["_id"]:
                 return value["nodePaused"]
-
-    @property
-    def extra_state_attributes(self):
-        return None

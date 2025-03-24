@@ -1,0 +1,9 @@
+default_config:
+
+logger:
+  default: warning
+  logs:
+    custom_components.tdarr: debug
+
+debugpy:
+  start: true

@@ -1,3 +1,4 @@
+from dataclasses import replace
 import logging
 import re
 
@@ -16,46 +17,55 @@ _LOGGER = logging.getLogger(__name__)
 SERVER_ENTITY_DESCRIPTIONS = {
     SensorEntityDescription(
         key="server",
+        translation_key="server",
         icon="mdi:server"
     ),
     SensorEntityDescription(
         key="stats_spacesaved",
+        translation_key="stats_spacesaved",
         icon="mdi:harddisk",
         native_unit_of_measurement="GB",
         device_class=SensorDeviceClass.DATA_SIZE
     ),
     SensorEntityDescription(
         key="stats_transcodefilesremaining",
+        translation_key="stats_transcodefilesremaining",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files"
     ),
     SensorEntityDescription(
         key="stats_transcodedcount",
+        translation_key="stats_transcodedcount",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files"
     ),
     SensorEntityDescription(
         key="stats_stagedcount",
+        translation_key="stats_stagedcount",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files"
     ),
     SensorEntityDescription(
         key="stats_healthcount",
+        translation_key="stats_healthcount",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files"
     ),
     SensorEntityDescription(
         key="stats_transcodeerrorcount",
+        translation_key="stats_transcodeerrorcount",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files"
     ),
     SensorEntityDescription(
         key="stats_healtherrorcount",
+        translation_key="stats_healtherrorcount",
         icon="mdi:medication-outline",
         native_unit_of_measurement="files"
     ),
     SensorEntityDescription(
         key="stats_totalfps",
+        translation_key="stats_totalfps",
         icon="mdi:video",
         native_unit_of_measurement="fps"
     ),
@@ -63,6 +73,7 @@ SERVER_ENTITY_DESCRIPTIONS = {
 
 LIBRARY_ENTITY_DESCRIPTION = SensorEntityDescription(
     key="library",
+    translation_key="library",
     icon="mdi:folder-multiple",
     native_unit_of_measurement="files"
 )
@@ -70,10 +81,12 @@ LIBRARY_ENTITY_DESCRIPTION = SensorEntityDescription(
 NODE_ENTITY_DESCRIPTIONS = {
     SensorEntityDescription(
         key="node",
+        translation_key="node",
         icon="mdi:server-network-outline",
     ),
     SensorEntityDescription(
         key="nodefps",
+        translation_key="nodefps",
         icon="mdi:video",
         native_unit_of_measurement="fps"
     )
@@ -91,11 +104,23 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     # Server Library Sensors
     for value in entry.data["libraries"]:
-        sensors.append(TdarrSensor(entry, value, config_entry.options, LIBRARY_ENTITY_DESCRIPTION))
+        description = replace(
+            LIBRARY_ENTITY_DESCRIPTION,
+            translation_placeholders={
+                "library_name": value["name"]
+            }
+        )
+        sensors.append(TdarrSensor(entry, value, config_entry.options, description))
 
     # Server Node Sensors
     for _, value in entry.data["nodes"].items():
         for description in NODE_ENTITY_DESCRIPTIONS:
+            description = replace(
+                description,
+                translation_placeholders={
+                    "node_name": value["nodeName"]
+                }
+            )
             sensors.append(TdarrSensor(entry, value, config_entry.options, description))
 
     async_add_entities(sensors, True)
@@ -105,6 +130,9 @@ class TdarrSensor(
     TdarrEntity,
     SensorEntity,
 ):
+    
+    _attr_has_entity_name = True # Required for reading translation_key from EntityDescription
+
     def __init__(self, coordinator, sensor, options, entity_description: SensorEntityDescription):
         self.sensor = sensor
         self.tdarroptions = options
@@ -199,25 +227,6 @@ class TdarrSensor(
                         qualities[quality["name"]] = quality["value"]
                     data["Resolutions"] = qualities
                     return data
-
-    @property
-    def name(self):
-        if self.entity_description.key == "server":
-            return "tdarr_server"
-        elif self.entity_description.key == "node":
-            if "nodeName" in self.sensor:
-                return "tdarr_node_" + self.sensor.get("nodeName", "Unknown")
-            else:
-                return "tdarr_node_" + self.sensor.get("_id", "Unknown")
-        elif self.entity_description.key == "nodefps":
-            if "nodeName" in self.sensor:
-                return "tdarr_node_" + self.sensor.get("nodeName", "Unknown") + "_fps"
-            else:
-                return "tdarr_node_" + self.sensor.get("_id", "Unknown") + "_fps"
-        elif self.entity_description.key == "library":
-            return "tdarr_library_" + self.sensor["name"]
-        else:
-            return "tdarr_" + self.entity_description.key
 
     @property
     def device_id(self):

@@ -20,8 +20,7 @@
             }
         }
     },
-
-        "options": {
+    "options": {
         "step": {
             "init": {
                 "data": {
@@ -32,7 +31,7 @@
             }
         }
     },
-    "services":{
+    "services": {
         "refresh_library": {
             "name": "Library",
             "description": "Rescan/Refresh Tdarr Library",
@@ -49,6 +48,57 @@
                     "name": "Scan Mode",
                     "description": "Mode to scan (default find new files only)"
                 }
+            }
+        }
+    },
+    "entity": {
+        "sensor": {
+            "server": {
+                "name": "Server Status"
+            },
+            "stats_spacesaved": {
+                "name": "Space Saved"
+            },
+            "stats_transcodefilesremaining": {
+                "name": "Transode Remaining"
+            },
+            "stats_transcodedcount": {
+                "name": "Transcoded"
+            },
+            "stats_stagedcount": {
+                "name": "Staged"
+            },
+            "stats_healthcount": {
+                "name": "Healthy"
+            },
+            "stats_transcodeerrorcount": {
+                "name": "Transcode Error"
+            },
+            "stats_healtherrorcount": {
+                "name": "Healthcheck Error"
+            },
+            "stats_totalfps": {
+                "name": "Total FPS"
+            },
+            "library": {
+                "name": "Library {library_name}"
+            },
+            "node": {
+                "name": "Node {node_name} Status"
+            },
+            "nodefps": {
+                "name": "Node {node_name} FPS"
+            }
+        },
+        "switch": {
+            "pause_all": {
+                "name": "Pause All"
+            },
+            "ignore_schedules": {
+                "name": "Ignore Schedules"
+            },
+            "node_pause": {
+                "name": "{node_name} Paused"
             }
         }
     }

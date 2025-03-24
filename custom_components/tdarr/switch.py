@@ -37,7 +37,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     # Server Switches
     for description in SERVER_ENTITY_DESCRIPTIONS:
-        switches.append(TdarrServerSwitch(entry, entry.data["globalsettings"], description.key, config_entry.options, description))
+        switches.append(TdarrServerSwitch(entry, config_entry.options, description))
 
     # Node Switches
     for _, value in entry.data["nodes"].items():
@@ -57,18 +57,18 @@ class TdarrServerSwitch(TdarrEntity, SwitchEntity):
 
     _attr_has_entity_name = True # Required for reading translation_key from EntityDescription
 
-    def __init__(self, coordinator, switch, name, options, entity_description: SwitchEntityDescription):
+    def __init__(self, coordinator, options, entity_description: SwitchEntityDescription):
         _LOGGER.info("Creating server level switch %s", entity_description.key)
-        if name == "pauseAll":
+
+        if entity_description.key == "pauseAll":
             self._device_id = "tdarr_pause_all"
-        elif name == "ignoreSchedules":
+        elif entity_description.key == "ignoreSchedules":
             self._device_id = "tdarr_ignore_schedules"
         else:
-            raise NotImplementedError(f"Unknown switch key %s", entity_description.key)
-        self.switch = switch
+            raise NotImplementedError(f"Unknown server switch key {entity_description.key}")
+        
         self.coordinator = coordinator
         self.entity_description = entity_description
-        self.object_name = name
         # Required for HA 2022.7
         self.coordinator_context = object()
 
@@ -81,7 +81,7 @@ class TdarrServerSwitch(TdarrEntity, SwitchEntity):
     async def async_set_paused(self, paused: bool):
         update = await self.coordinator.hass.async_add_executor_job(
             self.coordinator.tdarr.pauseNode,
-            self.object_name,
+            self.entity_description.key,
             paused
         )
 
@@ -97,6 +97,8 @@ class TdarrServerSwitch(TdarrEntity, SwitchEntity):
             self._attr_is_on = self.coordinator.data["globalsettings"]["pauseAllNodes"]
         elif self.object_name == "ignoreSchedules":
             self._attr_is_on = self.coordinator.data["globalsettings"]["ignoreSchedules"]
+        else:
+            raise NotImplementedError(f"Unknown server switch key {self.entity_description.key}")
             
         self.async_write_ha_state()
 

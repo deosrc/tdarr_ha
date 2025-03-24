@@ -25,10 +25,12 @@ SERVER_ENTITY_DESCRIPTIONS = {
     ),
 }
 
-NODE_PAUSE_ENTITY_DESCRIPTION = SwitchEntityDescription(
-    key="paused",
-    translation_key="node_paused"
-)
+NODE_ENTITY_DESCRIPTIONS = {
+    SwitchEntityDescription(
+        key="paused",
+        translation_key="node_paused"
+    )
+}
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Add the Switch from the config."""
@@ -41,14 +43,15 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     # Node Switches
     for _, value in entry.data["nodes"].items():
-        description = replace(
-            NODE_PAUSE_ENTITY_DESCRIPTION,
-            translation_placeholders={
-                "node_name": value["nodeName"]
-            }
-        )
-        sw = TdarrNodeSwitch(entry, value, value["_id"], config_entry.options, description)
-        switches.append(sw)
+        for d in NODE_ENTITY_DESCRIPTIONS:
+            description = replace(
+                d,
+                translation_placeholders={
+                    "node_name": value["nodeName"]
+                }
+            )
+            sw = TdarrNodeSwitch(entry, value, value["_id"], config_entry.options, description)
+            switches.append(sw)
 
     async_add_entities(switches, False)
 

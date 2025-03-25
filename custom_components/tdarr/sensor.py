@@ -21,7 +21,7 @@ _LOGGER = logging.getLogger(__name__)
 class TdarrSensorEntityDescription(SensorEntityDescription): 
     """Details of a Tdarr sensor entity""" 
  
-    value_fn: Callable[[dict], str | int | float | None] | None = None 
+    value_fn: Callable[[dict], str | int | float | None]
 
 def get_node_fps(node_data: dict) -> int:
     return sum([worker_data.get("fps", 0) for _, worker_data in node_data.get("workers", {}).items()])
@@ -165,9 +165,7 @@ class TdarrServerSensor(TdarrServerEntity, SensorEntity):
 
     @property 
     def native_value(self):
-        if self.description.value_fn:
-            return self.description.value_fn(self.data)        
-        raise NotImplementedError("Value implementation not available for library entity %s", self.entity_description.key)
+        return self.description.value_fn(self.data)
 
     @property
     def extra_state_attributes(self):
@@ -189,9 +187,7 @@ class TdarrLibrarySensor(TdarrLibraryEntity, SensorEntity):
 
     @property 
     def native_value(self):
-        if self.description.value_fn:
-            return self.description.value_fn(self.data)
-        raise NotImplementedError("Value implementation not available for library entity %s", self.entity_description.key)
+        return self.description.value_fn(self.data)
 
     @property
     def extra_state_attributes(self):
@@ -219,9 +215,7 @@ class TdarrNodeSensor(TdarrNodeEntity, SensorEntity):
 
     @property 
     def native_value(self):
-        if self.description.value_fn:
-            return self.description.value_fn(self.data)
-        raise NotImplementedError("Value implementation not available for node entity %s", self.entity_description.key)
+        return self.description.value_fn(self.data)
 
     @property
     def extra_state_attributes(self):

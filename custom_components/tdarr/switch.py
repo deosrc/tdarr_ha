@@ -21,7 +21,7 @@ _LOGGER = logging.getLogger(__name__)
 class TdarrSwitchEntityDescription(SwitchEntityDescription): 
     """Details of a Tdarr sensor entity""" 
  
-    value_fn: Callable[[dict], bool | None] | None = None 
+    value_fn: Callable[[dict], bool | None]
 
 SERVER_ENTITY_DESCRIPTIONS = {
     TdarrSwitchEntityDescription(
@@ -94,10 +94,7 @@ class TdarrServerSwitch(TdarrServerEntity, SwitchEntity):
  
     @callback 
     def _handle_coordinator_update(self) -> None: 
-        """Handle updated data from the coordinator.""" 
-        if not self.description.value_fn:
-            raise NotImplementedError(f"Unknown server switch key {self.entity_description.key}")
-        
+        """Handle updated data from the coordinator."""
         self._attr_is_on = self.description.value_fn(self.data)
         self.async_write_ha_state()
 
@@ -136,9 +133,6 @@ class TdarrNodeSwitch(TdarrNodeEntity, SwitchEntity):
     @callback 
     def _handle_coordinator_update(self) -> None: 
         """Handle updated data from the coordinator."""
-        if not self.description.value_fn:
-            raise NotImplementedError(f"Unknown node switch key {self.entity_description.key}")
-        
         self._attr_is_on = self.description.value_fn(self.data)
         self.async_write_ha_state()
 

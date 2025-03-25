@@ -136,6 +136,27 @@ NODE_ENTITY_DESCRIPTIONS = {
         native_unit_of_measurement="fps",
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: get_node_fps(data)
+    ),
+    TdarrSensorEntityDescription(
+        key="os_cpu_usage",
+        translation_key="os_cpu_usage",
+        icon="mdi:cpu-64-bit",
+        native_unit_of_measurement="%",
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda data: data.get("resStats", {}).get("os", {}).get("cpuPerc")
+    ),
+    TdarrSensorEntityDescription(
+        key="os_memory_usage",
+        translation_key="os_memory_usage",
+        icon="mdi:memory",
+        native_unit_of_measurement="%",
+        suggested_display_precision=2,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda data: (float(data.get("resStats", {}).get("os", {}).get("memUsedGB")) / float(data.get("resStats", {}).get("os", {}).get("memTotalGB"))) * 100,
+        attributes_fn=lambda data: {
+            "Used GB": data.get("resStats", {}).get("os", {}).get("memUsedGB"),
+            "Total GB": data.get("resStats", {}).get("os", {}).get("memTotalGB"),
+        }
     )
 }
 

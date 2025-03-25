@@ -30,16 +30,17 @@ class Server(object):
             return "ERROR"
     
     def getLibraries(self):
-        libraries = []
-        library = self.getPies()
-        library["name"] = "All"
-        libraries.append(library)
-        for lib in self.getLibraryStats():
-            library2 = self.getPies(lib["_id"])
-            library2["name"] = lib["name"]
-            libraries.append(library2)
-
-
+        libraries = {l["_id"]: { "name": l["name"] } for l in self.getLibraryStats()} 
+        libraries.update({ 
+            "": { 
+                "name": "All" 
+            } 
+        }) 
+        _LOGGER.debug("Libraries: %s", libraries) 
+ 
+        for key, value in libraries.items():
+            value.update(self.getPies(key))
+        
         return libraries
 
     def getStats(self):
@@ -74,8 +75,8 @@ class Server(object):
     def getPies(self, libraryID=""):
         post = {
             "data": {
-                "libraryId":libraryID
-                },
+                "libraryId": libraryID
+            },
         }
         r = requests.post(self.baseurl + 'stats/get-pies', json = post, headers=self.headers)
         if r.status_code == 200:

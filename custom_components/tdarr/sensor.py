@@ -105,7 +105,7 @@ LIBRARY_ENTITY_DESCRIPTIONS = {
         translation_key="library",
         icon="mdi:folder-multiple",
         native_unit_of_measurement="files",
-        value_fn=lambda data: data.get("totalFiles")
+        value_fn=lambda data: data.get("totalFiles"),
     )
 }
 
@@ -113,13 +113,15 @@ NODE_ENTITY_DESCRIPTIONS = {
     TdarrSensorEntityDescription(
         key="node",
         translation_key="node",
-        icon="mdi:server-network-outline"
+        icon="mdi:server-network-outline",
+        value_fn=lambda _: "Online",
     ),
     TdarrSensorEntityDescription(
         key="nodefps",
         translation_key="nodefps",
         icon="mdi:video",
-        native_unit_of_measurement="fps"
+        native_unit_of_measurement="fps",
+        value_fn=lambda data: get_node_fps(data)
     )
 }
 
@@ -219,11 +221,7 @@ class TdarrNodeSensor(TdarrNodeEntity, SensorEntity):
     def native_value(self):
         if self.description.value_fn:
             return self.description.value_fn(self.data)
-
-        if self.entity_description.key == "node":
-            return "Online"
-        elif self.entity_description.key == "nodefps":
-            return get_node_fps(self.data)
+        raise NotImplementedError("Value implementation not available for node entity %s", self.entity_description.key)
 
     @property
     def extra_state_attributes(self):

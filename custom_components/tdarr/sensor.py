@@ -111,7 +111,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                 "library_name": value["name"]
             }
         )
-        sensors.append(TdarrSensor(entry, value, config_entry.options, description))
+        sensors.append(TdarrLibrarySensor(entry, value, config_entry.options, description))
 
     # Server Node Sensors
     for key, value in entry.data["nodes"].items():
@@ -127,7 +127,51 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     async_add_entities(sensors, True)
 
 
-class TdarrSensor(TdarrEntity, SensorEntity):
+class TdarrServerSensor(TdarrServerEntity, SensorEntity):
+    
+    _attr_has_entity_name = True # Required for reading translation_key from EntityDescription
+
+    def __init__(self, coordinator, options, entity_description: SensorEntityDescription):
+        _LOGGER.info("Creating server level sensor %s", entity_description.key)
+        super().__init__(coordinator, entity_description)
+        self._attr = {}
+        # Required for HA 2022.7
+        self.coordinator_context = object()
+
+    @property 
+    def native_value(self):
+        if self.entity_description.key == "server":
+            return self.coordinator.data.get("server", {}).get("status")
+        elif self.entity_description.key == "stats_spacesaved":
+            return round(self.coordinator.data.get("stats",{}).get("sizeDiff", 0), 2)
+        elif self.entity_description.key == "stats_transcodefilesremaining":
+            return self.coordinator.data.get("stats",{}).get("table1Count", 0)
+        elif self.entity_description.key == "stats_transcodedcount":
+            return self.coordinator.data.get("stats",{}).get("table2Count", 0)
+        elif self.entity_description.key == "stats_stagedcount":
+            return self.coordinator.data.get("staged",{}).get("totalCount", 0)
+        elif self.entity_description.key == "stats_healthcount":
+            return self.coordinator.data.get("stats",{}).get("table4Count", 0)
+        elif self.entity_description.key == "stats_transcodeerrorcount":
+            return self.coordinator.data.get("stats",{}).get("table3Count", 0)
+        elif self.entity_description.key == "stats_healtherrorcount":
+            return self.coordinator.data.get("stats",{}).get("table6Count", 0)
+        elif self.entity_description.key == "stats_totalfps":
+            fps = 0
+            for _, node_values in self.coordinator.data["nodes"].items():
+                for _, worker_values in node_values.get("workers", {}).items():
+                    fps += worker_values.get("fps", 0)
+            return fps
+
+    @property
+    def extra_state_attributes(self):
+        if self.entity_description.key == "server":
+            return self.coordinator.data.get("server", {})
+        elif self.entity_description.key == "stats_spacesaved":
+            return self.coordinator.data.get("stats", {})
+
+
+class TdarrLibrarySensor(TdarrEntity, SensorEntity):
     
     _attr_has_entity_name = True # Required for reading translation_key from EntityDescription
 
@@ -177,50 +221,6 @@ class TdarrSensor(TdarrEntity, SensorEntity):
                         qualities[quality["name"]] = quality["value"]
                     data["Resolutions"] = qualities
                     return data
-
-
-class TdarrServerSensor(TdarrServerEntity, SensorEntity):
-    
-    _attr_has_entity_name = True # Required for reading translation_key from EntityDescription
-
-    def __init__(self, coordinator, options, entity_description: SensorEntityDescription):
-        _LOGGER.info("Creating server level sensor %s", entity_description.key)
-        super().__init__(coordinator, entity_description)
-        self._attr = {}
-        # Required for HA 2022.7
-        self.coordinator_context = object()
-
-    @property 
-    def native_value(self):
-        if self.entity_description.key == "server":
-            return self.coordinator.data.get("server", {}).get("status")
-        elif self.entity_description.key == "stats_spacesaved":
-            return round(self.coordinator.data.get("stats",{}).get("sizeDiff", 0), 2)
-        elif self.entity_description.key == "stats_transcodefilesremaining":
-            return self.coordinator.data.get("stats",{}).get("table1Count", 0)
-        elif self.entity_description.key == "stats_transcodedcount":
-            return self.coordinator.data.get("stats",{}).get("table2Count", 0)
-        elif self.entity_description.key == "stats_stagedcount":
-            return self.coordinator.data.get("staged",{}).get("totalCount", 0)
-        elif self.entity_description.key == "stats_healthcount":
-            return self.coordinator.data.get("stats",{}).get("table4Count", 0)
-        elif self.entity_description.key == "stats_transcodeerrorcount":
-            return self.coordinator.data.get("stats",{}).get("table3Count", 0)
-        elif self.entity_description.key == "stats_healtherrorcount":
-            return self.coordinator.data.get("stats",{}).get("table6Count", 0)
-        elif self.entity_description.key == "stats_totalfps":
-            fps = 0
-            for _, node_values in self.coordinator.data["nodes"].items():
-                for _, worker_values in node_values.get("workers", {}).items():
-                    fps += worker_values.get("fps", 0)
-            return fps
-
-    @property
-    def extra_state_attributes(self):
-        if self.entity_description.key == "server":
-            return self.coordinator.data.get("server", {})
-        elif self.entity_description.key == "stats_spacesaved":
-            return self.coordinator.data.get("stats", {})
         
 
 class TdarrNodeSensor(TdarrNodeEntity, SensorEntity):

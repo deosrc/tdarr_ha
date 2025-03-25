@@ -8,6 +8,7 @@ import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError
+from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
@@ -249,3 +250,50 @@ class TdarrEntity(CoordinatorEntity):
             "sw_version": sw_version,
             "manufacturer": MANUFACTURER
         }
+    
+class TdarrEntityV2(CoordinatorEntity):
+
+    def __init__(self, coordinator: TdarrDataUpdateCoordinator, entity_description: EntityDescription):
+        """Initialize the entity."""
+        super().__init__(coordinator)
+        self.entity_description = entity_description
+
+    async def async_added_to_hass(self) -> None:
+        """When entity is added to hass."""
+        await super().async_added_to_hass()
+        self._handle_coordinator_update()
+
+    @property
+    def device_info(self):
+        """Return device information about this device."""
+        return {
+            "identifiers": {(DOMAIN, self.coordinator.serverip)},
+            "name": f"Tdarr Server ({self.coordinator.serverip})",
+            "sw_version": self.coordinator.data.get("server", {}).get("version", "Unknown"),
+            "manufacturer": MANUFACTURER
+        }
+
+
+class TdarrServerEntity(TdarrEntityV2):
+
+    @property
+    def unique_id(self):
+        """Return the unique ID of the entity."""
+        return f"{self.coordinator.serverip}-server-{self.entity_description.key}"
+
+
+class TdarrNodeEntity(TdarrEntityV2):
+
+    def __init__(self, coordinator: TdarrDataUpdateCoordinator, node_id: str, entity_description: EntityDescription):
+        """Initialize the entity."""
+        super().__init__(coordinator, entity_description)
+        self.node_id = node_id
+
+    @property
+    def unique_id(self):
+        """Return the unique ID of the entity."""
+        return f"{self.coordinator.serverip}-node-{self.node_id}-{self.entity_description.key}"
+    
+    @property
+    def node_data(self):
+        return self.coordinator.data.get("nodes").get(self.node_id)

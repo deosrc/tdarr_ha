@@ -76,7 +76,7 @@
             "ignore_schedules": {
                 "name": "Ignore Schedules"
             },
-            "node_pause": {
+            "node_paused": {
                 "name": "{node_name} Paused"
             }
         }

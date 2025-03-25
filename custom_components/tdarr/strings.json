@@ -67,6 +67,9 @@
             },
             "frame_rate": {
                 "name": "Frame Rate"
+            },
+            "os_cpu_usage": {
+                "name": "OS CPU Usage"
             }
         },
         "switch": {

@@ -136,6 +136,14 @@ NODE_ENTITY_DESCRIPTIONS = {
         native_unit_of_measurement="fps",
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: get_node_fps(data)
+    ),
+    TdarrSensorEntityDescription(
+        key="os_cpu_usage",
+        translation_key="os_cpu_usage",
+        icon="mdi:cpu-64-bit",
+        native_unit_of_measurement="%",
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda data: data.get("resStats", {}).get("os", {}).get("cpuPerc")
     )
 }
 

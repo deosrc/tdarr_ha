@@ -6,15 +6,15 @@ _LOGGER = logging.getLogger(__name__)
 class TdarrApiClient(object):
     # Class representing a tdarr server
     def __init__(self, url, port, apikey=""):
-        self.url = url
-        self.baseurl = 'http://' + self.url + ':' + port + '/api/v2/'
-        self.headers = {
+        self._session = requests.Session()
+        self._session.headers.update({
             'Content-Type': 'application/json',
             'x-api-key': apikey
-        }
+        })
+        self.baseurl = 'http://' + url + ':' + port + '/api/v2/'
         
     def get_nodes(self):
-        r = requests.get(self.baseurl + 'get-nodes', headers=self.headers)
+        r = self._session.get(self.baseurl + 'get-nodes', headers=self.headers)
         if r.status_code == 200:
             result = r.json()
             return result
@@ -22,7 +22,7 @@ class TdarrApiClient(object):
             return "ERROR"
 
     def get_status(self):
-        r = requests.get(self.baseurl + 'status', headers=self.headers)
+        r = self._session.get(self.baseurl + 'status', headers=self.headers)
         if r.status_code == 200:
             result = r.json()
             return result
@@ -53,7 +53,7 @@ class TdarrApiClient(object):
                 },
             "timeout":1000
         }
-        r = requests.post(self.baseurl + 'cruddb', json = post, headers=self.headers)
+        r = self._session.post(self.baseurl + 'cruddb', json = post, headers=self.headers)
         if r.status_code == 200:
             return r.json()
         else:
@@ -67,7 +67,7 @@ class TdarrApiClient(object):
                 },
             "timeout":20000
         }
-        r = requests.post(self.baseurl + 'cruddb', json = post, headers=self.headers)
+        r = self._session.post(self.baseurl + 'cruddb', json = post, headers=self.headers)
         if r.status_code == 200:
             return r.json()
         else:
@@ -78,7 +78,7 @@ class TdarrApiClient(object):
                 "libraryId": libraryID
             },
         }
-        r = requests.post(self.baseurl + 'stats/get-pies', json = post, headers=self.headers)
+        r = self._session.post(self.baseurl + 'stats/get-pies', json = post, headers=self.headers)
         if r.status_code == 200:
             return r.json()["pieStats"]
         else:
@@ -95,7 +95,7 @@ class TdarrApiClient(object):
                 },
             "timeout":1000
         }
-        r = requests.post(self.baseurl + 'client/staged', json = post, headers=self.headers)
+        r = self._session.post(self.baseurl + 'client/staged', json = post, headers=self.headers)
         if r.status_code == 200:
             return r.json()
         else:
@@ -111,7 +111,7 @@ class TdarrApiClient(object):
                 },
             "timeout":1000
         }
-        r = requests.post(self.baseurl + 'cruddb', json = post, headers=self.headers)
+        r = self._session.post(self.baseurl + 'cruddb', json = post, headers=self.headers)
         if r.status_code == 200:
             return r.json()
         else:
@@ -129,7 +129,7 @@ class TdarrApiClient(object):
             },
             "timeout":20000
         }
-        return requests.post(self.baseurl + 'cruddb', json=data, headers=self.headers)
+        return self._session.post(self.baseurl + 'cruddb', json=data, headers=self.headers)
         
     def set_node_paused_state(self, nodeID, status) -> requests.Response:
         data = {
@@ -140,7 +140,7 @@ class TdarrApiClient(object):
                 }
             }
         }
-        return requests.post(self.baseurl + 'update-node', json=data, headers=self.headers)
+        return self._session.post(self.baseurl + 'update-node', json=data, headers=self.headers)
 
     def refresh_library(self, libraryname, mode, folderpath):
         stats = self.get_library_settings()
@@ -167,7 +167,7 @@ class TdarrApiClient(object):
             }
         }
 
-        r = requests.post(self.baseurl + "scan-files", json=data, headers=self.headers)
+        r = self._session.post(self.baseurl + "scan-files", json=data, headers=self.headers)
 
         if r.status_code == 200:
             _LOGGER.debug(r.text)

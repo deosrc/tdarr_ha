@@ -10,6 +10,7 @@ from homeassistant.components.sensor import (
 from . import (
     TdarrEntity,
     TdarrServerEntity,
+    TdarrNodeEntity,
 )
 from .const import DOMAIN, COORDINATOR
 
@@ -113,7 +114,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         sensors.append(TdarrSensor(entry, value, config_entry.options, description))
 
     # Server Node Sensors
-    for _, value in entry.data["nodes"].items():
+    for key, value in entry.data["nodes"].items():
         for description in NODE_ENTITY_DESCRIPTIONS:
             description = replace(
                 description,
@@ -121,7 +122,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                     "node_name": value["nodeName"]
                 }
             )
-            sensors.append(TdarrNodeSensor(entry, value, config_entry.options, description))
+            sensors.append(TdarrNodeSensor(entry, key, config_entry.options, description))
 
     async_add_entities(sensors, True)
 
@@ -222,28 +223,14 @@ class TdarrServerSensor(TdarrServerEntity, SensorEntity):
             return self.coordinator.data.get("stats", {})
         
 
-class TdarrNodeSensor(TdarrEntity, SensorEntity):
+class TdarrNodeSensor(TdarrNodeEntity, SensorEntity):
     
     _attr_has_entity_name = True # Required for reading translation_key from EntityDescription
 
-    def __init__(self, coordinator, sensor, options, entity_description: SensorEntityDescription):
-        self.sensor = sensor
-        self.tdarroptions = options
-        self.entity_description = entity_description
+    def __init__(self, coordinator, node_id, options, entity_description: SensorEntityDescription):
+        _LOGGER.info("Creating node %s level sensor %s", node_id, entity_description.key)
+        super().__init__(coordinator, node_id, entity_description)
         self._attr = {}
-        self.coordinator = coordinator
-        if self.entity_description.key == "node":
-            if "nodeName" in self.sensor:
-                self._device_id = "tdarr_node_" + self.sensor.get("nodeName", "")
-            else:
-                self._device_id = "tdarr_node_" + self.sensor.get("_id", "")
-        elif self.entity_description.key == "nodefps":
-            if "nodeName" in self.sensor:
-                self._device_id = "tdarr_node_" + self.sensor.get("nodeName","") + "_fps"
-            else:
-                self._device_id = "tdarr_node_" + self.sensor.get("_id", "") + "_fps"
-        else:
-            raise NotImplementedError(f"Unrecognised sensor type {self.entity_description.key}")
         # Required for HA 2022.7
         self.coordinator_context = object()
 
@@ -253,10 +240,10 @@ class TdarrNodeSensor(TdarrEntity, SensorEntity):
             return "Online"
         elif self.entity_description.key == "nodefps":
             fps = 0
-            for key1, value in self.coordinator.data.get("nodes", {}).get(self.sensor["_id"], {}).get("workers", {}).items():
-                fps += value.get("fps", 0)
+            for _, worker_values in self.node_data.get("workers", {}).items():
+                fps += worker_values.get("fps", 0)
             return fps
 
     @property
     def extra_state_attributes(self):
-        return self.coordinator.data.get("nodes",{}).get(self.sensor["_id"], {})
+        return self.node_data

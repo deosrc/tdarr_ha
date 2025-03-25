@@ -92,7 +92,8 @@ LIBRARY_ENTITY_DESCRIPTION = TdarrSensorEntityDescription(
     key="library",
     translation_key="library",
     icon="mdi:folder-multiple",
-    native_unit_of_measurement="files"
+    native_unit_of_measurement="files",
+    value_fn=lambda data: data.get("totalFiles")
 )
 
 NODE_ENTITY_DESCRIPTIONS = {
@@ -182,9 +183,7 @@ class TdarrLibrarySensor(TdarrLibraryEntity, SensorEntity):
     def native_value(self):
         if self.description.value_fn:
             return self.description.value_fn(self.data)
-
-        if self.entity_description.key == "library":
-            return self.data.get("totalFiles")
+        raise NotImplementedError("Value implementation not available for library entity %s", self.entity_description.key)
 
     @property
     def extra_state_attributes(self):

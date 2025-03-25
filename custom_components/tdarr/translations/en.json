@@ -84,10 +84,10 @@
                 "name": "Library {library_name}"
             },
             "node": {
-                "name": "Node {node_name} Status"
+                "name": "Status"
             },
             "nodefps": {
-                "name": "Node {node_name} FPS"
+                "name": "Processing Frame Rate"
             }
         },
         "switch": {
@@ -98,7 +98,7 @@
                 "name": "Ignore Schedules"
             },
             "node_paused": {
-                "name": "{node_name} Paused"
+                "name": "Paused"
             }
         }
     }

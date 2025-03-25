@@ -7,6 +7,13 @@ import async_timeout
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.const import (
+    ATTR_IDENTIFIERS,
+    ATTR_NAME,
+    ATTR_MANUFACTURER,
+    ATTR_SW_VERSION,
+    ATTR_VIA_DEVICE,
+)
 from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError
 from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.update_coordinator import (
@@ -215,10 +222,15 @@ class TdarrDataUpdateCoordinator(DataUpdateCoordinator):
 
 class TdarrEntity(CoordinatorEntity):
 
+    _attr_has_entity_name = True # Required for reading translation_key from EntityDescription
+
     def __init__(self, coordinator: TdarrDataUpdateCoordinator, entity_description: EntityDescription):
         """Initialize the entity."""
         super().__init__(coordinator)
         self.entity_description = entity_description
+        
+        # Required for HA 2022.7
+        self.coordinator_context = object()
 
     async def async_added_to_hass(self) -> None:
         """When entity is added to hass."""
@@ -229,10 +241,10 @@ class TdarrEntity(CoordinatorEntity):
     def device_info(self):
         """Return device information about this device."""
         return {
-            "identifiers": {(DOMAIN, self.coordinator.serverip)},
-            "name": f"Tdarr Server ({self.coordinator.serverip})",
-            "sw_version": self.coordinator.data.get("server", {}).get("version", "Unknown"),
-            "manufacturer": MANUFACTURER
+            ATTR_IDENTIFIERS: {(DOMAIN, self.coordinator.serverip)},
+            ATTR_NAME: f"Tdarr Server ({self.coordinator.serverip})",
+            ATTR_SW_VERSION: self.coordinator.data.get("server", {}).get("version", "Unknown"),
+            ATTR_MANUFACTURER: MANUFACTURER
         }
 
 
@@ -276,3 +288,17 @@ class TdarrNodeEntity(TdarrEntity):
     @property
     def node_data(self):
         return self.coordinator.data.get("nodes", {}).get(self.node_id)
+
+    @property
+    def device_info(self):
+        """Return device information about this device."""
+        device_info = super().device_info
+        server_identifier = next(iter(device_info[ATTR_IDENTIFIERS]))
+
+        # Override the identifier and name to produce a new device
+        device_info.update({
+            ATTR_IDENTIFIERS: {(DOMAIN, self.coordinator.serverip, "node", self.node_id)},
+            ATTR_NAME: f"Tdarr Node ({self.node_data.get("nodeName")})",
+            ATTR_VIA_DEVICE: server_identifier,
+        })
+        return device_info

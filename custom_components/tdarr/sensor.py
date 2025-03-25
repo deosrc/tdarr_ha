@@ -130,24 +130,24 @@ class TdarrServerSensor(TdarrServerEntity, SensorEntity):
     @property 
     def native_value(self):
         if self.entity_description.key == "server":
-            return self.coordinator.data.get("server", {}).get("status")
+            return self.data.get("server", {}).get("status")
         elif self.entity_description.key == "stats_spacesaved":
-            return round(self.coordinator.data.get("stats",{}).get("sizeDiff", 0), 2)
+            return round(self.data.get("stats",{}).get("sizeDiff", 0), 2)
         elif self.entity_description.key == "stats_transcodefilesremaining":
-            return self.coordinator.data.get("stats",{}).get("table1Count", 0)
+            return self.data.get("stats",{}).get("table1Count", 0)
         elif self.entity_description.key == "stats_transcodedcount":
-            return self.coordinator.data.get("stats",{}).get("table2Count", 0)
+            return self.data.get("stats",{}).get("table2Count", 0)
         elif self.entity_description.key == "stats_stagedcount":
-            return self.coordinator.data.get("staged",{}).get("totalCount", 0)
+            return self.data.get("staged",{}).get("totalCount", 0)
         elif self.entity_description.key == "stats_healthcount":
-            return self.coordinator.data.get("stats",{}).get("table4Count", 0)
+            return self.data.get("stats",{}).get("table4Count", 0)
         elif self.entity_description.key == "stats_transcodeerrorcount":
-            return self.coordinator.data.get("stats",{}).get("table3Count", 0)
+            return self.data.get("stats",{}).get("table3Count", 0)
         elif self.entity_description.key == "stats_healtherrorcount":
-            return self.coordinator.data.get("stats",{}).get("table6Count", 0)
+            return self.data.get("stats",{}).get("table6Count", 0)
         elif self.entity_description.key == "stats_totalfps":
             fps = 0
-            for _, node_values in self.coordinator.data["nodes"].items():
+            for _, node_values in self.data["nodes"].items():
                 for _, worker_values in node_values.get("workers", {}).items():
                     fps += worker_values.get("fps", 0)
             return fps
@@ -155,9 +155,9 @@ class TdarrServerSensor(TdarrServerEntity, SensorEntity):
     @property
     def extra_state_attributes(self):
         if self.entity_description.key == "server":
-            return self.coordinator.data.get("server", {})
+            return self.data.get("server", {})
         elif self.entity_description.key == "stats_spacesaved":
-            return self.coordinator.data.get("stats", {})
+            return self.data.get("stats", {})
 
 
 class TdarrLibrarySensor(TdarrLibraryEntity, SensorEntity):
@@ -169,16 +169,16 @@ class TdarrLibrarySensor(TdarrLibraryEntity, SensorEntity):
     @property 
     def native_value(self):
         if self.entity_description.key == "library":
-            return self.library_data.get("totalFiles")
+            return self.data.get("totalFiles")
 
     @property
     def extra_state_attributes(self):
-        video_info = self.library_data.get("video", {})
+        video_info = self.data.get("video", {})
         return {
-            "Total Files": self.library_data.get("totalFiles"),
-            "Number of Transcodes": self.library_data.get("totalTranscodeCount"),
-            "Space Saved (GB)": round(self.library_data.get("sizeDiff"), 0),
-            "Number of Health Checks": self.library_data.get("totalHealthCheckCount"),
+            "Total Files": self.data.get("totalFiles"),
+            "Number of Transcodes": self.data.get("totalTranscodeCount"),
+            "Space Saved (GB)": round(self.data.get("sizeDiff"), 0),
+            "Number of Health Checks": self.data.get("totalHealthCheckCount"),
             "Codecs": {x["name"]: x["value"] for x in video_info.get("codecs", {})},
             "Containers": {x["name"]: x["value"] for x in video_info.get("containers", {})},
             "Resolutions": {x["name"]: x["value"] for x in video_info.get("resolutions", {})},
@@ -187,7 +187,7 @@ class TdarrLibrarySensor(TdarrLibraryEntity, SensorEntity):
 
 class TdarrNodeSensor(TdarrNodeEntity, SensorEntity):
 
-    def __init__(self, coordinator, node_id, options, entity_description: SensorEntityDescription):
+    def __init__(self, coordinator, node_id, options, entity_description: TdarrSensorEntityDescription):
         _LOGGER.info("Creating node %s level sensor %s", node_id, entity_description.key)
         super().__init__(coordinator, node_id, entity_description)
 
@@ -197,10 +197,10 @@ class TdarrNodeSensor(TdarrNodeEntity, SensorEntity):
             return "Online"
         elif self.entity_description.key == "nodefps":
             fps = 0
-            for _, worker_values in self.node_data.get("workers", {}).items():
+            for _, worker_values in self.data.get("workers", {}).items():
                 fps += worker_values.get("fps", 0)
             return fps
 
     @property
     def extra_state_attributes(self):
-        return self.node_data
+        return self.data

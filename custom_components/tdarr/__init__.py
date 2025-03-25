@@ -235,7 +235,11 @@ class TdarrEntity(CoordinatorEntity):
     async def async_added_to_hass(self) -> None:
         """When entity is added to hass."""
         await super().async_added_to_hass()
-        self._handle_coordinator_update()
+        self._handle_coordinator_update()    
+
+    @property
+    def data(self) -> dict:
+        return self.coordinator.data
 
     @property
     def device_info(self):
@@ -269,7 +273,7 @@ class TdarrLibraryEntity(TdarrEntity):
         return f"{self.coordinator.serverip}-library-{self.library_id}-{self.entity_description.key}"
     
     @property
-    def library_data(self):
+    def data(self):
         return self.coordinator.data.get("libraries", {}).get(self.library_id)
 
 
@@ -286,7 +290,7 @@ class TdarrNodeEntity(TdarrEntity):
         return f"{self.coordinator.serverip}-node-{self.node_id}-{self.entity_description.key}"
     
     @property
-    def node_data(self):
+    def data(self):
         return self.coordinator.data.get("nodes", {}).get(self.node_id)
 
     @property
@@ -298,7 +302,7 @@ class TdarrNodeEntity(TdarrEntity):
         # Override the identifier and name to produce a new device
         device_info.update({
             ATTR_IDENTIFIERS: {(DOMAIN, self.coordinator.serverip, "node", self.node_id)},
-            ATTR_NAME: f"Tdarr Node ({self.node_data.get("nodeName")})",
+            ATTR_NAME: f"Tdarr Node ({self.data.get("nodeName")})",
             ATTR_VIA_DEVICE: server_identifier,
         })
         return device_info

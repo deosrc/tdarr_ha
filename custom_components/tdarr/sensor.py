@@ -49,7 +49,13 @@ SERVER_ENTITY_DESCRIPTIONS = {
     ),
     SensorEntityDescription(
         key="stats_healthycount",
-        translation_key="stats_healthcount",
+        translation_key="stats_healthycount",
+        icon="mdi:file-multiple",
+        native_unit_of_measurement="files",
+    ),
+    SensorEntityDescription(
+        key="stats_healthcheckfilesremaining",
+        translation_key="stats_healthcheckfilesremaining",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files"
     ),
@@ -84,7 +90,7 @@ NODE_ENTITY_DESCRIPTIONS = {
     SensorEntityDescription(
         key="node",
         translation_key="node",
-        icon="mdi:server-network-outline",
+        icon="mdi:server-network-outline"
     ),
     SensorEntityDescription(
         key="nodefps",
@@ -139,6 +145,8 @@ class TdarrServerSensor(TdarrServerEntity, SensorEntity):
             return self.coordinator.data.get("stats",{}).get("table2Count", 0)
         elif self.entity_description.key == "stats_stagedcount":
             return self.coordinator.data.get("staged",{}).get("totalCount", 0)
+        elif self.entity_description.key == "stats_healthcheckfilesremaining":
+            return self.coordinator.data.get("stats",{}).get("table4Count", 0)
         elif self.entity_description.key == "stats_healthycount":
             return self.coordinator.data.get("stats",{}).get("table5Count", 0)
         elif self.entity_description.key == "stats_transcodeerrorcount":

@@ -88,13 +88,15 @@ SERVER_ENTITY_DESCRIPTIONS = {
     ),
 }
 
-LIBRARY_ENTITY_DESCRIPTION = TdarrSensorEntityDescription(
-    key="library",
-    translation_key="library",
-    icon="mdi:folder-multiple",
-    native_unit_of_measurement="files",
-    value_fn=lambda data: data.get("totalFiles")
-)
+LIBRARY_ENTITY_DESCRIPTIONS = {
+    TdarrSensorEntityDescription(
+        key="library",
+        translation_key="library",
+        icon="mdi:folder-multiple",
+        native_unit_of_measurement="files",
+        value_fn=lambda data: data.get("totalFiles")
+    )
+}
 
 NODE_ENTITY_DESCRIPTIONS = {
     TdarrSensorEntityDescription(
@@ -121,13 +123,14 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     # Server Library Sensors
     for library_id, data in entry.data["libraries"].items():
-        description = replace(
-            LIBRARY_ENTITY_DESCRIPTION,
-            translation_placeholders={
-                "library_name": data["name"]
-            }
-        )
-        sensors.append(TdarrLibrarySensor(entry, library_id, config_entry.options, description))
+        for description in LIBRARY_ENTITY_DESCRIPTIONS:
+            description = replace(
+                description,
+                translation_placeholders={
+                    "library_name": data["name"]
+                }
+            )
+            sensors.append(TdarrLibrarySensor(entry, library_id, config_entry.options, description))
 
     # Server Node Sensors
     for node_id in entry.data["nodes"]:

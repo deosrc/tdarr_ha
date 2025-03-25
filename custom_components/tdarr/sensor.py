@@ -23,6 +23,9 @@ class TdarrSensorEntityDescription(SensorEntityDescription):
  
     value_fn: Callable[[dict], str | int | float | None] | None = None 
 
+def get_node_fps(node_data: dict) -> int:
+    return sum([worker_data.get("fps", 0) for _, worker_data in node_data.get("workers", {}).items()])
+
 SERVER_ENTITY_DESCRIPTIONS = {
     TdarrSensorEntityDescription(
         key="server",
@@ -163,11 +166,7 @@ class TdarrServerSensor(TdarrServerEntity, SensorEntity):
             return self.description.value_fn(self.data)
 
         if self.entity_description.key == "stats_totalfps":
-            fps = 0
-            for _, node_values in self.data["nodes"].items():
-                for _, worker_values in node_values.get("workers", {}).items():
-                    fps += worker_values.get("fps", 0)
-            return fps
+            return sum([get_node_fps(node_data) for _, node_data in self.data.get("nodes", {}).items()])
         
         raise NotImplementedError("Value implementation not available for library entity %s", self.entity_description.key)
 
@@ -227,10 +226,7 @@ class TdarrNodeSensor(TdarrNodeEntity, SensorEntity):
         if self.entity_description.key == "node":
             return "Online"
         elif self.entity_description.key == "nodefps":
-            fps = 0
-            for _, worker_values in self.data.get("workers", {}).items():
-                fps += worker_values.get("fps", 0)
-            return fps
+            return get_node_fps(self.data)
 
     @property
     def extra_state_attributes(self):

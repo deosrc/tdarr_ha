@@ -59,16 +59,6 @@ class TdarrServerSwitch(TdarrServerEntity, SwitchEntity):
         _LOGGER.info("Creating server level switch %s", entity_description.key)
         super().__init__(coordinator, entity_description)
 
-        if entity_description.key == "pauseAll":
-            self._device_id = "tdarr_pause_all"
-        elif entity_description.key == "ignoreSchedules":
-            self._device_id = "tdarr_ignore_schedules"
-        else:
-            raise NotImplementedError(f"Unknown server switch key {entity_description.key}")
-        
-        # Required for HA 2022.7
-        self.coordinator_context = object()
-
     async def async_turn_on(self, **kwargs):
         return await self.async_set_state(True)
 
@@ -105,8 +95,6 @@ class TdarrNodeSwitch(TdarrNodeEntity, SwitchEntity):
     def __init__(self, coordinator, node_id, options, entity_description: SwitchEntityDescription):
         _LOGGER.info("Creating node %s level switch %s", node_id, entity_description.key)
         super().__init__(coordinator, node_id, entity_description)
-        # Required for HA 2022.7
-        self.coordinator_context = object()
 
     async def async_turn_on(self, **kwargs):
         return await self.async_set_state(True)

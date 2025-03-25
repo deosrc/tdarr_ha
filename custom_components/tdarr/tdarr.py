@@ -23,9 +23,11 @@ class TdarrApiClient(object):
     """API Client for interacting with a Tdarr server"""
 
     def __init__(self, url, port, api_key=""):
+        self._id = f"{url}:{port}"
         self._session = TdarrServerSession(url, port, api_key)
         
     def get_nodes(self):
+        _LOGGER.debug("Retrieving nodes from %s", self._id)
         r = self._session.get('get-nodes')
         if r.status_code == 200:
             result = r.json()
@@ -34,6 +36,7 @@ class TdarrApiClient(object):
             return "ERROR"
 
     def get_status(self):
+        _LOGGER.debug("Retrieving status from %s", self._id)
         r = self._session.get('status')
         if r.status_code == 200:
             result = r.json()
@@ -42,6 +45,7 @@ class TdarrApiClient(object):
             return "ERROR"
     
     def get_libraries(self):
+        _LOGGER.debug("Retrieving libraries from %s", self._id)
         libraries = {l["_id"]: { "name": l["name"] } for l in self.get_library_settings()} 
         libraries.update({ 
             "": { 
@@ -56,6 +60,7 @@ class TdarrApiClient(object):
         return libraries
 
     def get_stats(self):
+        _LOGGER.debug("Retrieving stats from %s", self._id)
         post = {
             "data": {
                 "collection":"StatisticsJSONDB",
@@ -72,6 +77,7 @@ class TdarrApiClient(object):
             return "ERROR"
     
     def get_library_settings(self):
+        _LOGGER.debug("Retrieving library settings from %s", self._id)
         post = {
             "data": {
                 "collection":"LibrarySettingsJSONDB",
@@ -84,10 +90,12 @@ class TdarrApiClient(object):
             return r.json()
         else:
             return
-    def get_pies(self, libraryID=""):
+        
+    def get_pies(self, library_id=""):
+        _LOGGER.debug("Retrieving pies for library ID '%s' from %s", library_id, self._id)
         post = {
             "data": {
-                "libraryId": libraryID
+                "libraryId": library_id
             },
         }
         r = self._session.post('stats/get-pies', json = post)
@@ -97,6 +105,7 @@ class TdarrApiClient(object):
             return "ERROR"
         
     def get_staged(self):
+        _LOGGER.debug("Retrieving staged files from %s", self._id)
         post = {
             "data": {
                 "filters":[],
@@ -114,6 +123,7 @@ class TdarrApiClient(object):
             return "ERROR"
         
     def get_global_settings(self):  
+        _LOGGER.debug("Retrieving global settings from %s", self._id)
         post = {
             "data": {
                 "collection":"SettingsGlobalJSONDB",
@@ -129,7 +139,8 @@ class TdarrApiClient(object):
         else:
             return {"message": r.text, "status_code": r.status_code, "status": "ERROR"}
         
-    def set_global_setting(self, setting_key, value) -> requests.Response:
+    def set_global_setting(self, setting_key, value):
+        _LOGGER.debug("Setting global setting '%s' for %s", setting_key, self._id)
         data = {
             "data":{
                 "collection":"SettingsGlobalJSONDB",
@@ -143,10 +154,11 @@ class TdarrApiClient(object):
         }
         return self._session.post('cruddb', json=data)
         
-    def set_node_paused_state(self, nodeID, status) -> requests.Response:
+    def set_node_paused_state(self, node_id, status):
+        _LOGGER.debug("Setting node '%s' paused state to '%b' for %s", node_id, status, self._id)
         data = {
             "data": {
-                "nodeID": nodeID,
+                "nodeID": node_id,
                 "nodeUpdates": {
                     "nodePaused": status
                 }
@@ -154,15 +166,15 @@ class TdarrApiClient(object):
         }
         return self._session.post('update-node', json=data)
 
-    def refresh_library(self, libraryname, mode, folderpath):
+    def refresh_library(self, library_name, mode, folder_path):
+        _LOGGER.debug("Refreshing library '%s' using mode '%s' for %s", library_name, mode, self._id)
         stats = self.get_library_settings()
         libid = None
-        _LOGGER.debug(mode)
 
         if mode == "":
             mode = "scanFindNew"
         for lib in stats:
-            if libraryname in lib["name"]:
+            if library_name in lib["name"]:
                 libid = lib["_id"]
 
         if libid is None:
@@ -173,7 +185,7 @@ class TdarrApiClient(object):
             "data": {
                 "scanConfig": {
                     "dbID" : libid,
-                    "arrayOrPath": folderpath,
+                    "arrayOrPath": folder_path,
                     "mode": mode
                 }
             }

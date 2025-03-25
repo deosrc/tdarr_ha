@@ -33,7 +33,7 @@ from .const import (
     APIKEY
 )
 
-from .tdarr import Server
+from .tdarr import TdarrApiClient
 
 CONFIG_SCHEMA = vol.Schema({DOMAIN: vol.Schema({})}, extra=vol.ALLOW_EXTRA)
 
@@ -139,7 +139,7 @@ class TdarrDataUpdateCoordinator(DataUpdateCoordinator):
         self._hass = hass
         self.serverip = serverip
         self.serverport = serverport
-        self.tdarr = Server(serverip, serverport, apikey)
+        self.tdarr = TdarrApiClient(serverip, serverport, apikey)
         self._available = True
 
         super().__init__(

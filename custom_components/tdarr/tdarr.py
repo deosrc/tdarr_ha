@@ -3,7 +3,7 @@ import requests
 
 _LOGGER = logging.getLogger(__name__)
 
-class Server(object):
+class TdarrApiClient(object):
     # Class representing a tdarr server
     def __init__(self, url, port, apikey=""):
         self.url = url

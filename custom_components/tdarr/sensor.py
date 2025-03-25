@@ -27,50 +27,58 @@ SERVER_ENTITY_DESCRIPTIONS = {
     TdarrSensorEntityDescription(
         key="server",
         translation_key="server",
-        icon="mdi:server"
+        icon="mdi:server",
+        value_fn=lambda data: data.get("server", {}).get("status"),
     ),
     TdarrSensorEntityDescription(
         key="stats_spacesaved",
         translation_key="stats_spacesaved",
         icon="mdi:harddisk",
         native_unit_of_measurement="GB",
-        device_class=SensorDeviceClass.DATA_SIZE
+        device_class=SensorDeviceClass.DATA_SIZE,
+        value_fn=lambda data: data.get("stats", {}).get("sizeDiff"),
     ),
     TdarrSensorEntityDescription(
         key="stats_transcodefilesremaining",
         translation_key="stats_transcodefilesremaining",
         icon="mdi:file-multiple",
-        native_unit_of_measurement="files"
+        native_unit_of_measurement="files",
+        value_fn=lambda data: data.get("stats", {}).get("table1Count"),
     ),
     TdarrSensorEntityDescription(
         key="stats_transcodedcount",
         translation_key="stats_transcodedcount",
         icon="mdi:file-multiple",
-        native_unit_of_measurement="files"
+        native_unit_of_measurement="files",
+        value_fn=lambda data: data.get("stats", {}).get("table2Count"),
     ),
     TdarrSensorEntityDescription(
         key="stats_stagedcount",
         translation_key="stats_stagedcount",
         icon="mdi:file-multiple",
-        native_unit_of_measurement="files"
+        native_unit_of_measurement="files",
+        value_fn=lambda data: data.get("staged", {}).get("totalCount"),
     ),
     TdarrSensorEntityDescription(
         key="stats_healthcount",
         translation_key="stats_healthcount",
         icon="mdi:file-multiple",
-        native_unit_of_measurement="files"
+        native_unit_of_measurement="files",
+        value_fn=lambda data: data.get("stats", {}).get("table4Count"),
     ),
     TdarrSensorEntityDescription(
         key="stats_transcodeerrorcount",
         translation_key="stats_transcodeerrorcount",
         icon="mdi:file-multiple",
-        native_unit_of_measurement="files"
+        native_unit_of_measurement="files",
+        value_fn=lambda data: data.get("stats", {}).get("table3Count"),
     ),
     TdarrSensorEntityDescription(
         key="stats_healtherrorcount",
         translation_key="stats_healtherrorcount",
         icon="mdi:medication-outline",
-        native_unit_of_measurement="files"
+        native_unit_of_measurement="files",
+        value_fn=lambda data: data.get("stats", {}).get("table6Count"),
     ),
     TdarrSensorEntityDescription(
         key="stats_totalfps",
@@ -143,28 +151,14 @@ class TdarrServerSensor(TdarrServerEntity, SensorEntity):
         if self.description.value_fn:
             return self.description.value_fn(self.data)
 
-        if self.entity_description.key == "server":
-            return self.data.get("server", {}).get("status")
-        elif self.entity_description.key == "stats_spacesaved":
-            return round(self.data.get("stats",{}).get("sizeDiff", 0), 2)
-        elif self.entity_description.key == "stats_transcodefilesremaining":
-            return self.data.get("stats",{}).get("table1Count", 0)
-        elif self.entity_description.key == "stats_transcodedcount":
-            return self.data.get("stats",{}).get("table2Count", 0)
-        elif self.entity_description.key == "stats_stagedcount":
-            return self.data.get("staged",{}).get("totalCount", 0)
-        elif self.entity_description.key == "stats_healthcount":
-            return self.data.get("stats",{}).get("table4Count", 0)
-        elif self.entity_description.key == "stats_transcodeerrorcount":
-            return self.data.get("stats",{}).get("table3Count", 0)
-        elif self.entity_description.key == "stats_healtherrorcount":
-            return self.data.get("stats",{}).get("table6Count", 0)
-        elif self.entity_description.key == "stats_totalfps":
+        if self.entity_description.key == "stats_totalfps":
             fps = 0
             for _, node_values in self.data["nodes"].items():
                 for _, worker_values in node_values.get("workers", {}).items():
                     fps += worker_values.get("fps", 0)
             return fps
+        
+        raise NotImplementedError("Value implementation not available for library entity %s", self.entity_description.key)
 
     @property
     def extra_state_attributes(self):

@@ -1,20 +1,32 @@
 import logging
+from urllib.parse import urljoin
 import requests
 
 _LOGGER = logging.getLogger(__name__)
 
-class TdarrApiClient(object):
-    # Class representing a tdarr server
-    def __init__(self, url, port, apikey=""):
-        self._session = requests.Session()
-        self._session.headers.update({
+class TdarrServerSession(requests.Session):
+    """Requests session with the base URL and headers configured."""
+
+    def __init__(self, url, port, api_key=""):
+        super().__init__()
+        self.headers.update({
             'Content-Type': 'application/json',
-            'x-api-key': apikey
+            'x-api-key': api_key
         })
-        self.baseurl = 'http://' + url + ':' + port + '/api/v2/'
+        self._base_url = 'http://' + url + ':' + port + '/api/v2/'
+
+    def request(self, method, url, *args, **kwargs):
+        full_url = urljoin(self._base_url, url)
+        return super().request(method, full_url, *args, **kwargs)
+
+class TdarrApiClient(object):
+    """API Client for interacting with a Tdarr server"""
+
+    def __init__(self, url, port, api_key=""):
+        self._session = TdarrServerSession(url, port, api_key)
         
     def get_nodes(self):
-        r = self._session.get(self.baseurl + 'get-nodes', headers=self.headers)
+        r = self._session.get('get-nodes')
         if r.status_code == 200:
             result = r.json()
             return result
@@ -22,7 +34,7 @@ class TdarrApiClient(object):
             return "ERROR"
 
     def get_status(self):
-        r = self._session.get(self.baseurl + 'status', headers=self.headers)
+        r = self._session.get('status')
         if r.status_code == 200:
             result = r.json()
             return result
@@ -53,7 +65,7 @@ class TdarrApiClient(object):
                 },
             "timeout":1000
         }
-        r = self._session.post(self.baseurl + 'cruddb', json = post, headers=self.headers)
+        r = self._session.post('cruddb', json = post)
         if r.status_code == 200:
             return r.json()
         else:
@@ -67,7 +79,7 @@ class TdarrApiClient(object):
                 },
             "timeout":20000
         }
-        r = self._session.post(self.baseurl + 'cruddb', json = post, headers=self.headers)
+        r = self._session.post('cruddb', json = post)
         if r.status_code == 200:
             return r.json()
         else:
@@ -78,7 +90,7 @@ class TdarrApiClient(object):
                 "libraryId": libraryID
             },
         }
-        r = self._session.post(self.baseurl + 'stats/get-pies', json = post, headers=self.headers)
+        r = self._session.post('stats/get-pies', json = post)
         if r.status_code == 200:
             return r.json()["pieStats"]
         else:
@@ -95,7 +107,7 @@ class TdarrApiClient(object):
                 },
             "timeout":1000
         }
-        r = self._session.post(self.baseurl + 'client/staged', json = post, headers=self.headers)
+        r = self._session.post('client/staged', json = post)
         if r.status_code == 200:
             return r.json()
         else:
@@ -111,7 +123,7 @@ class TdarrApiClient(object):
                 },
             "timeout":1000
         }
-        r = self._session.post(self.baseurl + 'cruddb', json = post, headers=self.headers)
+        r = self._session.post('cruddb', json = post)
         if r.status_code == 200:
             return r.json()
         else:
@@ -129,7 +141,7 @@ class TdarrApiClient(object):
             },
             "timeout":20000
         }
-        return self._session.post(self.baseurl + 'cruddb', json=data, headers=self.headers)
+        return self._session.post('cruddb', json=data)
         
     def set_node_paused_state(self, nodeID, status) -> requests.Response:
         data = {
@@ -140,7 +152,7 @@ class TdarrApiClient(object):
                 }
             }
         }
-        return self._session.post(self.baseurl + 'update-node', json=data, headers=self.headers)
+        return self._session.post('update-node', json=data)
 
     def refresh_library(self, libraryname, mode, folderpath):
         stats = self.get_library_settings()
@@ -167,7 +179,7 @@ class TdarrApiClient(object):
             }
         }
 
-        r = self._session.post(self.baseurl + "scan-files", json=data, headers=self.headers)
+        r = self._session.post("scan-files", json=data)
 
         if r.status_code == 200:
             _LOGGER.debug(r.text)

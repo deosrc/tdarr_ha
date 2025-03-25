@@ -190,26 +190,16 @@ class TdarrLibrarySensor(TdarrLibraryEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self):
-        library = self.library_data
-        if library:
-            data = {}
-            data["Total Files"] = library["totalFiles"]
-            data["Number of Transcodes"] = library["totalTranscodeCount"]
-            data["Space Saved (GB)"] = round(library["sizeDiff"], 0)
-            data["Number of Health Checks"] = library["totalHealthCheckCount"]
-            codecs = {}
-            for codec in library.get("video", {}).get("codecs", {}):
-                codecs[codec["name"]] = codec["value"]
-            data["Codecs"] = codecs
-            containers = {}
-            for container in library.get("video", {}).get("containers", {}):
-                containers[container["name"]] = container["value"]
-            data["Containers"] = containers
-            qualities = {}
-            for quality in library.get("video", {}).get("resolutions", {}):
-                qualities[quality["name"]] = quality["value"]
-            data["Resolutions"] = qualities
-            return data
+        video_info = self.library_data.get("video", {})
+        return {
+            "Total Files": self.library_data.get("totalFiles"),
+            "Number of Transcodes": self.library_data.get("totalTranscodeCount"),
+            "Space Saved (GB)": round(self.library_data.get("sizeDiff"), 0),
+            "Number of Health Checks": self.library_data.get("totalHealthCheckCount"),
+            "Codecs": {x["name"]: x["value"] for x in video_info.get("codecs", {})},
+            "Containers": {x["name"]: x["value"] for x in video_info.get("containers", {})},
+            "Resolutions": {x["name"]: x["value"] for x in video_info.get("resolutions", {})},
+        }
         
 
 class TdarrNodeSensor(TdarrNodeEntity, SensorEntity):

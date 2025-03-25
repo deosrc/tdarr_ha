@@ -132,6 +132,6 @@ class TdarrNodeSwitch(TdarrNodeEntity, SwitchEntity):
     @callback 
     def _handle_coordinator_update(self) -> None: 
         """Handle updated data from the coordinator."""
-        self._attr_is_on = self.node_data["nodePaused"]
+        self._attr_is_on = self.data["nodePaused"]
         self.async_write_ha_state()
 

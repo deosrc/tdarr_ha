@@ -121,7 +121,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                     "node_name": value["nodeName"]
                 }
             )
-            sensors.append(TdarrSensor(entry, value, config_entry.options, description))
+            sensors.append(TdarrNodeSensor(entry, value, config_entry.options, description))
 
     async_add_entities(sensors, True)
 
@@ -136,17 +136,7 @@ class TdarrSensor(TdarrEntity, SensorEntity):
         self.entity_description = entity_description
         self._attr = {}
         self.coordinator = coordinator
-        if self.entity_description.key == "node":
-            if "nodeName" in self.sensor:
-                self._device_id = "tdarr_node_" + self.sensor.get("nodeName", "")
-            else:
-                self._device_id = "tdarr_node_" + self.sensor.get("_id", "")
-        elif self.entity_description.key == "nodefps":
-            if "nodeName" in self.sensor:
-                self._device_id = "tdarr_node_" + self.sensor.get("nodeName","") + "_fps"
-            else:
-                self._device_id = "tdarr_node_" + self.sensor.get("_id", "") + "_fps"
-        elif self.entity_description.key == "library":
+        if self.entity_description.key == "library":
             self._device_id = "tdarr_library_" + self.sensor["name"]
         else:
             raise NotImplementedError(f"Unrecognised sensor type {self.entity_description.key}")
@@ -155,14 +145,7 @@ class TdarrSensor(TdarrEntity, SensorEntity):
 
     @property 
     def native_value(self):
-        if self.entity_description.key == "node":
-            return "Online"
-        elif self.entity_description.key == "nodefps":
-            fps = 0
-            for key1, value in self.coordinator.data.get("nodes", {}).get(self.sensor["_id"], {}).get("workers", {}).items():
-                fps += value.get("fps", 0)
-            return fps
-        elif self.entity_description.key == "library":
+        if self.entity_description.key == "library":
             libraries = self.coordinator.data.get("libraries",{})
             for library in libraries:
                 if library["name"] == self.sensor["name"]:
@@ -171,9 +154,7 @@ class TdarrSensor(TdarrEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self):
-        if self.entity_description.key == "node":
-            return self.coordinator.data.get("nodes",{}).get(self.sensor["_id"], {})
-        elif self.entity_description.key == "library":
+        if self.entity_description.key == "library":
             libraries = self.coordinator.data.get("libraries",{})
             for library in libraries:
                 if library["name"] == self.sensor["name"]:
@@ -195,6 +176,7 @@ class TdarrSensor(TdarrEntity, SensorEntity):
                         qualities[quality["name"]] = quality["value"]
                     data["Resolutions"] = qualities
                     return data
+
 
 class TdarrServerSensor(TdarrServerEntity, SensorEntity):
     
@@ -238,3 +220,43 @@ class TdarrServerSensor(TdarrServerEntity, SensorEntity):
             return self.coordinator.data.get("server", {})
         elif self.entity_description.key == "stats_spacesaved":
             return self.coordinator.data.get("stats", {})
+        
+
+class TdarrNodeSensor(TdarrEntity, SensorEntity):
+    
+    _attr_has_entity_name = True # Required for reading translation_key from EntityDescription
+
+    def __init__(self, coordinator, sensor, options, entity_description: SensorEntityDescription):
+        self.sensor = sensor
+        self.tdarroptions = options
+        self.entity_description = entity_description
+        self._attr = {}
+        self.coordinator = coordinator
+        if self.entity_description.key == "node":
+            if "nodeName" in self.sensor:
+                self._device_id = "tdarr_node_" + self.sensor.get("nodeName", "")
+            else:
+                self._device_id = "tdarr_node_" + self.sensor.get("_id", "")
+        elif self.entity_description.key == "nodefps":
+            if "nodeName" in self.sensor:
+                self._device_id = "tdarr_node_" + self.sensor.get("nodeName","") + "_fps"
+            else:
+                self._device_id = "tdarr_node_" + self.sensor.get("_id", "") + "_fps"
+        else:
+            raise NotImplementedError(f"Unrecognised sensor type {self.entity_description.key}")
+        # Required for HA 2022.7
+        self.coordinator_context = object()
+
+    @property 
+    def native_value(self):
+        if self.entity_description.key == "node":
+            return "Online"
+        elif self.entity_description.key == "nodefps":
+            fps = 0
+            for key1, value in self.coordinator.data.get("nodes", {}).get(self.sensor["_id"], {}).get("workers", {}).items():
+                fps += value.get("fps", 0)
+            return fps
+
+    @property
+    def extra_state_attributes(self):
+        return self.coordinator.data.get("nodes",{}).get(self.sensor["_id"], {})

@@ -47,7 +47,7 @@ SERVER_ENTITY_DESCRIPTIONS = {
     TdarrSensorEntityDescription(
         key="staged",
         translation_key="staged",
-        icon="mdi:file-multiple",
+        icon="mdi:file-sync",
         native_unit_of_measurement="files",
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: data.get("staged", {}).get("totalCount"),
@@ -55,7 +55,7 @@ SERVER_ENTITY_DESCRIPTIONS = {
     TdarrSensorEntityDescription(
         key="transcode_queued",
         translation_key="transcode_queued",
-        icon="mdi:file-multiple",
+        icon="mdi:file-arrow-up-down",
         native_unit_of_measurement="files",
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: data.get("stats", {}).get("table1Count"),
@@ -63,7 +63,7 @@ SERVER_ENTITY_DESCRIPTIONS = {
     TdarrSensorEntityDescription(
         key="transcode_success",
         translation_key="transcode_success",
-        icon="mdi:file-multiple",
+        icon="mdi:file-check",
         native_unit_of_measurement="files",
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: data.get("stats", {}).get("table2Count"),
@@ -71,7 +71,7 @@ SERVER_ENTITY_DESCRIPTIONS = {
     TdarrSensorEntityDescription(
         key="transcode_error",
         translation_key="transcode_error",
-        icon="mdi:file-multiple",
+        icon="mdi:file-alert",
         native_unit_of_measurement="files",
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: data.get("stats", {}).get("table3Count"),
@@ -79,7 +79,7 @@ SERVER_ENTITY_DESCRIPTIONS = {
     TdarrSensorEntityDescription(
         key="healthcheck_queued",
         translation_key="healthcheck_queued",
-        icon="mdi:file-multiple",
+        icon="mdi:heart-pulse",
         native_unit_of_measurement="files",
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: data.get("stats", {}).get("table4Count"),
@@ -87,14 +87,14 @@ SERVER_ENTITY_DESCRIPTIONS = {
     TdarrSensorEntityDescription(
         key="healthcheck_success",
         translation_key="healthcheck_success",
-        icon="mdi:file-multiple",
+        icon="mdi:heart",
         native_unit_of_measurement="files",
         value_fn=lambda data: data.get("stats", {}).get("table5Count"),
     ),
     TdarrSensorEntityDescription(
         key="healthcheck_error",
         translation_key="healthcheck_error",
-        icon="mdi:medication-outline",
+        icon="mdi:heart-broken",
         native_unit_of_measurement="files",
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: data.get("stats", {}).get("table6Count"),

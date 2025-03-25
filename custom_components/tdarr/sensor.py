@@ -60,8 +60,15 @@ SERVER_ENTITY_DESCRIPTIONS = {
         value_fn=lambda data: data.get("staged", {}).get("totalCount"),
     ),
     TdarrSensorEntityDescription(
-        key="stats_healthcount",
-        translation_key="stats_healthcount",
+        key="stats_healthycount",
+        translation_key="stats_healthycount",
+        icon="mdi:file-multiple",
+        native_unit_of_measurement="files",
+        value_fn=lambda data: data.get("stats", {}).get("table5Count"),
+    ),
+    TdarrSensorEntityDescription(
+        key="stats_healthcheckfilesremaining",
+        translation_key="stats_healthcheckfilesremaining",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files",
         value_fn=lambda data: data.get("stats", {}).get("table4Count"),
@@ -102,7 +109,7 @@ NODE_ENTITY_DESCRIPTIONS = {
     TdarrSensorEntityDescription(
         key="node",
         translation_key="node",
-        icon="mdi:server-network-outline",
+        icon="mdi:server-network-outline"
     ),
     TdarrSensorEntityDescription(
         key="nodefps",

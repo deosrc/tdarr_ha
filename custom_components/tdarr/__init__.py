@@ -33,7 +33,7 @@ from .const import (
     APIKEY
 )
 
-from .tdarr import Server
+from .tdarr import TdarrApiClient
 
 CONFIG_SCHEMA = vol.Schema({DOMAIN: vol.Schema({})}, extra=vol.ALLOW_EXTRA)
 
@@ -116,15 +116,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     return unload_ok
 
-def refresh_library(hass, service, coordinator):
-    libraryid = service.data.get("library", "")
-    mode = service.data.get("mode", "scanFindNew")
-    folderpath = service.data.get("folderpath", "")
-    status = coordinator.tdarr.refreshLibrary(libraryid, mode, folderpath)
-    if "ERROR" in status:
-        _LOGGER.debug(status)
-        raise HomeAssistantError(status["ERROR"])
-
 async def options_update_listener(
     hass: HomeAssistant,  entry: ConfigEntry 
     ):
@@ -139,7 +130,7 @@ class TdarrDataUpdateCoordinator(DataUpdateCoordinator):
         self._hass = hass
         self.serverip = serverip
         self.serverport = serverport
-        self.tdarr = Server(serverip, serverport, apikey)
+        self.tdarr = TdarrApiClient(serverip, serverport, apikey)
         self._available = True
 
         super().__init__(
@@ -155,27 +146,27 @@ class TdarrDataUpdateCoordinator(DataUpdateCoordinator):
             async with async_timeout.timeout(30):
                 data = {}
                 data["server"] = await self._hass.async_add_executor_job(
-                    self.tdarr.getStatus  # Fetch new status
+                    self.tdarr.get_status  # Fetch new status
                 )
 
                 data["nodes"] = await self._hass.async_add_executor_job(
-                    self.tdarr.getNodes
+                    self.tdarr.get_nodes
                 )          
 
                 data["stats"] = await self._hass.async_add_executor_job(
-                    self.tdarr.getStats
+                    self.tdarr.get_stats
                 )
 
                 data["staged"] = await self._hass.async_add_executor_job(
-                    self.tdarr.getStaged
+                    self.tdarr.get_staged
                 )
 
                 data["libraries"] = await self._hass.async_add_executor_job(
-                    self.tdarr.getLibraries
+                    self.tdarr.get_libraries
                 )
 
                 data["globalsettings"] = await self._hass.async_add_executor_job(
-                    self.tdarr.getSettings
+                    self.tdarr.get_global_settings
                 )
                 #_LOGGER.debug(self.data)
                 if self.data is not None:
@@ -306,3 +297,13 @@ class TdarrNodeEntity(TdarrEntity):
             ATTR_VIA_DEVICE: server_identifier,
         })
         return device_info
+
+
+def refresh_library(hass, service, coordinator: TdarrDataUpdateCoordinator):
+    libraryid = service.data.get("library", "")
+    mode = service.data.get("mode", "scanFindNew")
+    folderpath = service.data.get("folderpath", "")
+    status = coordinator.tdarr.refresh_library(libraryid, mode, folderpath)
+    if "ERROR" in status:
+        _LOGGER.debug(status)
+        raise HomeAssistantError(status["ERROR"])

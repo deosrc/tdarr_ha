@@ -14,7 +14,7 @@ from .const import (
     UPDATE_INTERVAL_DEFAULT,
     APIKEY
 )
-from .tdarr import Server
+from .tdarr import TdarrApiClient
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -32,9 +32,9 @@ async def validate_input(hass: core.HomeAssistant, data):
     Data has the keys from DATA_SCHEMA with values provided by the user.
     """
     
-    tdarr = Server(data[SERVERIP], data[SERVERPORT], data[APIKEY])
+    tdarr = TdarrApiClient(data[SERVERIP], data[SERVERPORT], data[APIKEY])
 
-    result = await hass.async_add_executor_job(tdarr.getSettings)
+    result = await hass.async_add_executor_job(tdarr.get_global_settings)
     if result.get("status", "") == "ERROR":
         if "Invalid API key" in result["message"]:
             raise InvalidAPIKEY

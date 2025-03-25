@@ -15,7 +15,7 @@ from . import (
     TdarrNodeEntity,
 )
 from .const import DOMAIN, COORDINATOR
-from .tdarr import Server
+from .tdarr import TdarrApiClient
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -30,13 +30,13 @@ class TdarrSwitchEntityDescription(SwitchEntityDescription):
 class TdarrServerSwitchEntityDescription(TdarrSwitchEntityDescription): 
     """Details of a Tdarr server switch entity""" 
  
-    update_fn: Callable[[Server, bool], Response]
+    update_fn: Callable[[TdarrApiClient, bool], Response]
 
 @dataclass(frozen=True, kw_only=True) 
 class TdarrNodeSwitchEntityDescription(TdarrSwitchEntityDescription): 
     """Details of a Tdarr node switch entity""" 
  
-    update_fn: Callable[[Server, str, bool], None]
+    update_fn: Callable[[TdarrApiClient, str, bool], None]
 
 SERVER_ENTITY_DESCRIPTIONS = {
     TdarrServerSwitchEntityDescription(

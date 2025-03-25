@@ -70,6 +70,9 @@
             },
             "os_cpu_usage": {
                 "name": "OS CPU Usage"
+            },
+            "os_memory_usage": {
+                "name": "OS Memory Usage"
             }
         },
         "switch": {

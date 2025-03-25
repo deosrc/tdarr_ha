@@ -53,44 +53,41 @@
     },
     "entity": {
         "sensor": {
-            "server": {
-                "name": "Server Status"
-            },
-            "stats_spacesaved": {
-                "name": "Space Saved"
-            },
-            "stats_transcodefilesremaining": {
-                "name": "Transode Remaining"
-            },
-            "stats_transcodedcount": {
-                "name": "Transcoded"
-            },
-            "stats_stagedcount": {
-                "name": "Staged"
-            },
-            "stats_healthycount": {
-                "name": "Healthy"
-            },
-            "stats_healthcheckfilesremaining": {
-                "name": "Healthcheck Remaining"
-            },
-            "stats_transcodeerrorcount": {
-                "name": "Transcode Error"
-            },
-            "stats_healtherrorcount": {
-                "name": "Healthcheck Error"
-            },
-            "stats_totalfps": {
-                "name": "Total FPS"
-            },
-            "library": {
-                "name": "Library {library_name}"
-            },
-            "node": {
+            "status": {
                 "name": "Status"
             },
-            "nodefps": {
-                "name": "Processing Frame Rate"
+            "space_saved": {
+                "name": "Space Saved"
+            },
+            "staged": {
+                "name": "Staged"
+            },
+            "transcode_queued": {
+                "name": "Transcode: Queued"
+            },
+            "transcode_success": {
+                "name": "Transcode: Success"
+            },
+            "transcode_error": {
+                "name": "Transcode: Error"
+            },
+            "healthcheck_queued": {
+                "name": "Health Check: Queued"
+            },
+            "healthcheck_success": {
+                "name": "Health Check: Success"
+            },
+            "healthcheck_error": {
+                "name": "Health Check: Error"
+            },
+            "total_frame_rate": {
+                "name": "Total Frame Rate"
+            },
+            "library": {
+                "name": "Library: {library_name}"
+            },
+            "frame_rate": {
+                "name": "Frame Rate"
             }
         },
         "switch": {

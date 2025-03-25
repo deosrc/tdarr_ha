@@ -40,14 +40,14 @@ class TdarrNodeSwitchEntityDescription(TdarrSwitchEntityDescription):
 
 SERVER_ENTITY_DESCRIPTIONS = {
     TdarrServerSwitchEntityDescription(
-        key="pauseAll",
+        key="pause_all",
         translation_key="pause_all",
         icon="mdi:pause-circle",
         value_fn=lambda data: data.get("globalsettings", {}).get("pauseAllNodes"),
         update_fn=lambda server, state: server.set_global_setting("pauseAll", state),
     ),
     TdarrServerSwitchEntityDescription(
-        key="ignoreSchedules",
+        key="ignore_schedules",
         translation_key="ignore_schedules",
         icon="mdi:calendar-remove",
         value_fn=lambda data: data.get("globalsettings", {}).get("ignoreSchedules"),
@@ -59,6 +59,7 @@ NODE_ENTITY_DESCRIPTIONS = {
     TdarrNodeSwitchEntityDescription(
         key="paused",
         translation_key="node_paused",
+        icon="mdi:pause-circle",
         value_fn=lambda data: data.get("nodePaused"),
         update_fn=lambda server, node_id, state: server.set_node_paused_state(node_id, state),
     )

@@ -117,7 +117,7 @@ class Server(object):
         else:
             return {"message": r.text, "status_code": r.status_code, "status": "ERROR"}
         
-    def pauseNode(self, nodeID, status):
+    def pauseNode(self, nodeID, status) -> requests.Response:
 
         if nodeID == "pauseAll":
             data = {
@@ -155,10 +155,7 @@ class Server(object):
                 }
             }
             r = requests.post(self.baseurl + 'update-node', json=data, headers=self.headers)
-        if r.status_code == 200:
-            return "OK"
-        else:
-            return "ERROR"
+        return r
 
     def refreshLibrary(self, libraryname, mode, folderpath):
         stats = self.getLibraryStats()

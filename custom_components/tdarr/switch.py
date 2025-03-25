@@ -7,6 +7,8 @@ from homeassistant.components.switch import (
     SwitchEntity,
     SwitchEntityDescription
 )
+from homeassistant.exceptions import HomeAssistantError
+from requests import HTTPError, Response
 
 from . import (
     TdarrServerEntity,
@@ -29,7 +31,7 @@ class TdarrServerSwitchEntityDescription(TdarrSwitchEntityDescription):
     """Details of a Tdarr server switch entity""" 
  
     value_fn: Callable[[dict], bool | None]
-    update_fn: Callable[[Server, bool], None]
+    update_fn: Callable[[Server, bool], Response]
 
 @dataclass(frozen=True, kw_only=True) 
 class TdarrNodeSwitchEntityDescription(SwitchEntityDescription): 
@@ -102,11 +104,17 @@ class TdarrServerSwitch(TdarrServerEntity, SwitchEntity):
         def update_action():
             return self.description.update_fn(self.coordinator.tdarr, state)
 
-        update = await self.coordinator.hass.async_add_executor_job(update_action)
-        if update == "OK":
-            self._attr_is_on = state 
-            self.async_write_ha_state() 
-            await self.coordinator.async_request_refresh() 
+        try:
+            response: Response = await self.coordinator.hass.async_add_executor_job(update_action)
+        except HTTPError as e:
+            raise HomeAssistantError(f"Error setting {self.entity_description.key} switch: {e}")
+        
+        if response.status_code >= 400:
+            raise HomeAssistantError(f"Error response received setting {self.entity_description.key} switch: {response.status_code} {response.reason}")
+
+        self._attr_is_on = state
+        self.async_write_ha_state()
+        await self.coordinator.async_request_refresh()
  
     @callback 
     def _handle_coordinator_update(self) -> None: 
@@ -134,12 +142,18 @@ class TdarrNodeSwitch(TdarrNodeEntity, SwitchEntity):
     async def async_set_state(self, state: bool):
         def update_action():
             return self.description.update_fn(self.coordinator.tdarr, self.node_id, state)
+        
+        try:
+            response: Response = await self.coordinator.hass.async_add_executor_job(update_action)
+        except HTTPError as e:
+            raise HomeAssistantError(f"Error setting {self.entity_description.key} switch: {e}")
+        
+        if response.status_code >= 400:
+            raise HomeAssistantError(f"Error response received setting {self.entity_description.key} switch: {response.status_code} {response.reason}")
 
-        update = await self.coordinator.hass.async_add_executor_job(update_action)
-        if update == "OK":
-            self._attr_is_on = state 
-            self.async_write_ha_state()
-            await self.coordinator.async_request_refresh() 
+        self._attr_is_on = state 
+        self.async_write_ha_state()
+        await self.coordinator.async_request_refresh() 
  
     @callback 
     def _handle_coordinator_update(self) -> None: 

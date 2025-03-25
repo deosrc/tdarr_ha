@@ -104,25 +104,25 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         sensors.append(TdarrServerSensor(entry, config_entry.options, description))
 
     # Server Library Sensors
-    for value in entry.data["libraries"]:
+    for library_id, data in entry.data["libraries"].items():
         description = replace(
             LIBRARY_ENTITY_DESCRIPTION,
             translation_placeholders={
-                "library_name": value["name"]
+                "library_name": data["name"]
             }
         )
-        sensors.append(TdarrLibrarySensor(entry, value, config_entry.options, description))
+        sensors.append(TdarrLibrarySensor(entry, library_id, data, config_entry.options, description))
 
     # Server Node Sensors
-    for key, value in entry.data["nodes"].items():
+    for node_id, data in entry.data["nodes"].items():
         for description in NODE_ENTITY_DESCRIPTIONS:
             description = replace(
                 description,
                 translation_placeholders={
-                    "node_name": value["nodeName"]
+                    "node_name": data["nodeName"]
                 }
             )
-            sensors.append(TdarrNodeSensor(entry, key, config_entry.options, description))
+            sensors.append(TdarrNodeSensor(entry, node_id, config_entry.options, description))
 
     async_add_entities(sensors, True)
 
@@ -175,7 +175,8 @@ class TdarrLibrarySensor(TdarrEntity, SensorEntity):
     
     _attr_has_entity_name = True # Required for reading translation_key from EntityDescription
 
-    def __init__(self, coordinator, sensor, options, entity_description: SensorEntityDescription):
+    def __init__(self, coordinator, library_id, sensor, options, entity_description: SensorEntityDescription):
+        self.library_id = library_id
         self.sensor = sensor
         self.tdarroptions = options
         self.entity_description = entity_description
@@ -187,40 +188,38 @@ class TdarrLibrarySensor(TdarrEntity, SensorEntity):
             raise NotImplementedError(f"Unrecognised sensor type {self.entity_description.key}")
         # Required for HA 2022.7
         self.coordinator_context = object()
+    
+    @property
+    def library_data(self):
+        return self.coordinator.data.get("libraries",{}).get(self.library_id)
 
     @property 
     def native_value(self):
         if self.entity_description.key == "library":
-            libraries = self.coordinator.data.get("libraries",{})
-            for library in libraries:
-                if library["name"] == self.sensor["name"]:
-                    _LOGGER.debug(library)
-                    return library["totalFiles"]
+            return self.library_data.get("totalFiles")
 
     @property
     def extra_state_attributes(self):
-        if self.entity_description.key == "library":
-            libraries = self.coordinator.data.get("libraries",{})
-            for library in libraries:
-                if library["name"] == self.sensor["name"]:
-                    data = {}
-                    data["Total Files"] = library["totalFiles"]
-                    data["Number of Transcodes"] = library["totalTranscodeCount"]
-                    data["Space Saved (GB)"] = round(library["sizeDiff"], 0)
-                    data["Number of Health Checks"] = library["totalHealthCheckCount"]
-                    codecs = {}
-                    for codec in library.get("video", {}).get("codecs", {}):
-                        codecs[codec["name"]] = codec["value"]
-                    data["Codecs"] = codecs
-                    containers = {}
-                    for container in library.get("video", {}).get("containers", {}):
-                        containers[container["name"]] = container["value"]
-                    data["Containers"] = containers
-                    qualities = {}
-                    for quality in library.get("video", {}).get("resolutions", {}):
-                        qualities[quality["name"]] = quality["value"]
-                    data["Resolutions"] = qualities
-                    return data
+        library = self.library_data
+        if library:
+            data = {}
+            data["Total Files"] = library["totalFiles"]
+            data["Number of Transcodes"] = library["totalTranscodeCount"]
+            data["Space Saved (GB)"] = round(library["sizeDiff"], 0)
+            data["Number of Health Checks"] = library["totalHealthCheckCount"]
+            codecs = {}
+            for codec in library.get("video", {}).get("codecs", {}):
+                codecs[codec["name"]] = codec["value"]
+            data["Codecs"] = codecs
+            containers = {}
+            for container in library.get("video", {}).get("containers", {}):
+                containers[container["name"]] = container["value"]
+            data["Containers"] = containers
+            qualities = {}
+            for quality in library.get("video", {}).get("resolutions", {}):
+                qualities[quality["name"]] = quality["value"]
+            data["Resolutions"] = qualities
+            return data
         
 
 class TdarrNodeSensor(TdarrNodeEntity, SensorEntity):

@@ -116,15 +116,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     return unload_ok
 
-def refresh_library(hass, service, coordinator):
-    libraryid = service.data.get("library", "")
-    mode = service.data.get("mode", "scanFindNew")
-    folderpath = service.data.get("folderpath", "")
-    status = coordinator.tdarr.refreshLibrary(libraryid, mode, folderpath)
-    if "ERROR" in status:
-        _LOGGER.debug(status)
-        raise HomeAssistantError(status["ERROR"])
-
 async def options_update_listener(
     hass: HomeAssistant,  entry: ConfigEntry 
     ):
@@ -306,3 +297,13 @@ class TdarrNodeEntity(TdarrEntity):
             ATTR_VIA_DEVICE: server_identifier,
         })
         return device_info
+
+
+def refresh_library(hass, service, coordinator: TdarrDataUpdateCoordinator):
+    libraryid = service.data.get("library", "")
+    mode = service.data.get("mode", "scanFindNew")
+    folderpath = service.data.get("folderpath", "")
+    status = coordinator.tdarr.refresh_library(libraryid, mode, folderpath)
+    if "ERROR" in status:
+        _LOGGER.debug(status)
+        raise HomeAssistantError(status["ERROR"])

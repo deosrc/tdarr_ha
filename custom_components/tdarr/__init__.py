@@ -121,7 +121,7 @@ async def options_update_listener(
     ):
         _LOGGER.debug("OPTIONS CHANGE")
         await hass.config_entries.async_reload(entry.entry_id)
-        
+
 def refresh_library(hass, service, coordinator: TdarrDataUpdateCoordinator):
     libraryid = service.data.get("library", "")
     mode = service.data.get("mode", "scanFindNew")
@@ -131,7 +131,7 @@ def refresh_library(hass, service, coordinator: TdarrDataUpdateCoordinator):
         _LOGGER.debug(status)
         raise HomeAssistantError(status["ERROR"])
 
-class TdarrEntity(CoordinatorEntity):
+class TdarrEntity(CoordinatorEntity[TdarrDataUpdateCoordinator]):
 
     _attr_has_entity_name = True # Required for reading translation_key from EntityDescription
 

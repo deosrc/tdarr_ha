@@ -18,7 +18,7 @@ from .api import TdarrApiClient
 _LOGGER = logging.getLogger(__name__)
 
 
-class TdarrDataUpdateCoordinator(DataUpdateCoordinator):
+class TdarrDataUpdateCoordinator(DataUpdateCoordinator[dict]):
     """DataUpdateCoordinator to handle fetching new data about the Tdarr Controller."""
 
     def __init__(self, hass, serverip, serverport, update_interval, apikey):

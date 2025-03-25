@@ -28,71 +28,71 @@ def get_node_fps(node_data: dict) -> int:
 
 SERVER_ENTITY_DESCRIPTIONS = {
     TdarrSensorEntityDescription(
-        key="server",
-        translation_key="server",
+        key="status",
+        translation_key="status",
         icon="mdi:server",
         value_fn=lambda data: data.get("server", {}).get("status"),
     ),
     TdarrSensorEntityDescription(
-        key="stats_spacesaved",
-        translation_key="stats_spacesaved",
+        key="space_saved",
+        translation_key="space_saved",
         icon="mdi:harddisk",
         native_unit_of_measurement="GB",
         device_class=SensorDeviceClass.DATA_SIZE,
         value_fn=lambda data: data.get("stats", {}).get("sizeDiff"),
     ),
     TdarrSensorEntityDescription(
-        key="stats_transcodefilesremaining",
-        translation_key="stats_transcodefilesremaining",
+        key="transcode_queued",
+        translation_key="transcode_queued",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files",
         value_fn=lambda data: data.get("stats", {}).get("table1Count"),
     ),
     TdarrSensorEntityDescription(
-        key="stats_transcodedcount",
-        translation_key="stats_transcodedcount",
+        key="transcode_success",
+        translation_key="transcode_success",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files",
         value_fn=lambda data: data.get("stats", {}).get("table2Count"),
     ),
     TdarrSensorEntityDescription(
-        key="stats_stagedcount",
-        translation_key="stats_stagedcount",
+        key="staged",
+        translation_key="staged",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files",
         value_fn=lambda data: data.get("staged", {}).get("totalCount"),
     ),
     TdarrSensorEntityDescription(
-        key="stats_healthycount",
-        translation_key="stats_healthycount",
+        key="healthcheck_success",
+        translation_key="healthcheck_success",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files",
         value_fn=lambda data: data.get("stats", {}).get("table5Count"),
     ),
     TdarrSensorEntityDescription(
-        key="stats_healthcheckfilesremaining",
-        translation_key="stats_healthcheckfilesremaining",
+        key="healthcheck_queued",
+        translation_key="healthcheck_queued",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files",
         value_fn=lambda data: data.get("stats", {}).get("table4Count"),
     ),
     TdarrSensorEntityDescription(
-        key="stats_transcodeerrorcount",
-        translation_key="stats_transcodeerrorcount",
+        key="transcode_error",
+        translation_key="transcode_error",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files",
         value_fn=lambda data: data.get("stats", {}).get("table3Count"),
     ),
     TdarrSensorEntityDescription(
-        key="stats_healtherrorcount",
-        translation_key="stats_healtherrorcount",
+        key="healthcheck_error",
+        translation_key="healthcheck_error",
         icon="mdi:medication-outline",
         native_unit_of_measurement="files",
         value_fn=lambda data: data.get("stats", {}).get("table6Count"),
     ),
     TdarrSensorEntityDescription(
-        key="stats_totalfps",
-        translation_key="stats_totalfps",
+        key="total_frame_rate",
+        translation_key="total_frame_rate",
         icon="mdi:video",
         native_unit_of_measurement="fps",
         value_fn=lambda data: sum([get_node_fps(node_data) for _, node_data in data.get("nodes", {}).items()]),
@@ -111,14 +111,14 @@ LIBRARY_ENTITY_DESCRIPTIONS = {
 
 NODE_ENTITY_DESCRIPTIONS = {
     TdarrSensorEntityDescription(
-        key="node",
-        translation_key="node",
+        key="status",
+        translation_key="status",
         icon="mdi:server-network-outline",
         value_fn=lambda _: "Online",
     ),
     TdarrSensorEntityDescription(
-        key="nodefps",
-        translation_key="nodefps",
+        key="frame_rate",
+        translation_key="frame_rate",
         icon="mdi:video",
         native_unit_of_measurement="fps",
         value_fn=lambda data: get_node_fps(data)
@@ -171,7 +171,7 @@ class TdarrServerSensor(TdarrServerEntity, SensorEntity):
     def extra_state_attributes(self):
         if self.entity_description.key == "server":
             return self.data.get("server", {})
-        elif self.entity_description.key == "stats_spacesaved":
+        elif self.entity_description.key == "space_saved":
             return self.data.get("stats", {})
 
 

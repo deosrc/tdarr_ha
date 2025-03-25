@@ -53,44 +53,41 @@
     },
     "entity": {
         "sensor": {
-            "server": {
-                "name": "Server Status"
-            },
-            "stats_spacesaved": {
+            "space_saved": {
                 "name": "Space Saved"
             },
-            "stats_transcodefilesremaining": {
+            "transcode_queued": {
                 "name": "Transode Remaining"
             },
-            "stats_transcodedcount": {
+            "transcode_success": {
                 "name": "Transcoded"
             },
-            "stats_stagedcount": {
+            "staged": {
                 "name": "Staged"
             },
-            "stats_healthycount": {
+            "healthcheck_success": {
                 "name": "Healthy"
             },
-            "stats_healthcheckfilesremaining": {
+            "healthcheck_queued": {
                 "name": "Healthcheck Remaining"
             },
-            "stats_transcodeerrorcount": {
+            "transcode_error": {
                 "name": "Transcode Error"
             },
-            "stats_healtherrorcount": {
+            "healthcheck_error": {
                 "name": "Healthcheck Error"
             },
-            "stats_totalfps": {
+            "total_frame_rate": {
                 "name": "Total FPS"
             },
             "library": {
                 "name": "Library {library_name}"
             },
-            "node": {
+            "status": {
                 "name": "Status"
             },
-            "nodefps": {
-                "name": "Processing Frame Rate"
+            "frame_rate": {
+                "name": "Frame Rate"
             }
         },
         "switch": {

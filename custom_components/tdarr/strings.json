@@ -47,7 +47,10 @@
             "stats_stagedcount": {
                 "name": "Staged"
             },
-            "stats_healthcount": {
+            "stats_healthcheckfilesremaining": {
+                "name": "Healthcheck Remaining"
+            },
+            "stats_healthycount": {
                 "name": "Healthy"
             },
             "stats_transcodeerrorcount": {

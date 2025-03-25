@@ -39,6 +39,7 @@ SERVER_ENTITY_DESCRIPTIONS = {
         translation_key="space_saved",
         icon="mdi:harddisk",
         native_unit_of_measurement="GB",
+        suggested_display_precision=2,
         device_class=SensorDeviceClass.DATA_SIZE,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: data.get("stats", {}).get("sizeDiff"),

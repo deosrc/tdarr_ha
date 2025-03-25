@@ -1,5 +1,6 @@
-from dataclasses import replace
+from dataclasses import dataclass, replace
 import logging
+from typing import Callable
 
 from homeassistant.components.sensor import (
     SensorEntity,
@@ -16,56 +17,62 @@ from .const import DOMAIN, COORDINATOR
 
 _LOGGER = logging.getLogger(__name__)
 
+@dataclass(frozen=True, kw_only=True) 
+class TdarrSensorEntityDescription(SensorEntityDescription): 
+    """Details of a Tdarr sensor entity""" 
+ 
+    value_fn: Callable[[dict], str | int | float | None] | None = None 
+
 SERVER_ENTITY_DESCRIPTIONS = {
-    SensorEntityDescription(
+    TdarrSensorEntityDescription(
         key="server",
         translation_key="server",
         icon="mdi:server"
     ),
-    SensorEntityDescription(
+    TdarrSensorEntityDescription(
         key="stats_spacesaved",
         translation_key="stats_spacesaved",
         icon="mdi:harddisk",
         native_unit_of_measurement="GB",
         device_class=SensorDeviceClass.DATA_SIZE
     ),
-    SensorEntityDescription(
+    TdarrSensorEntityDescription(
         key="stats_transcodefilesremaining",
         translation_key="stats_transcodefilesremaining",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files"
     ),
-    SensorEntityDescription(
+    TdarrSensorEntityDescription(
         key="stats_transcodedcount",
         translation_key="stats_transcodedcount",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files"
     ),
-    SensorEntityDescription(
+    TdarrSensorEntityDescription(
         key="stats_stagedcount",
         translation_key="stats_stagedcount",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files"
     ),
-    SensorEntityDescription(
+    TdarrSensorEntityDescription(
         key="stats_healthcount",
         translation_key="stats_healthcount",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files"
     ),
-    SensorEntityDescription(
+    TdarrSensorEntityDescription(
         key="stats_transcodeerrorcount",
         translation_key="stats_transcodeerrorcount",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files"
     ),
-    SensorEntityDescription(
+    TdarrSensorEntityDescription(
         key="stats_healtherrorcount",
         translation_key="stats_healtherrorcount",
         icon="mdi:medication-outline",
         native_unit_of_measurement="files"
     ),
-    SensorEntityDescription(
+    TdarrSensorEntityDescription(
         key="stats_totalfps",
         translation_key="stats_totalfps",
         icon="mdi:video",
@@ -73,7 +80,7 @@ SERVER_ENTITY_DESCRIPTIONS = {
     ),
 }
 
-LIBRARY_ENTITY_DESCRIPTION = SensorEntityDescription(
+LIBRARY_ENTITY_DESCRIPTION = TdarrSensorEntityDescription(
     key="library",
     translation_key="library",
     icon="mdi:folder-multiple",
@@ -81,12 +88,12 @@ LIBRARY_ENTITY_DESCRIPTION = SensorEntityDescription(
 )
 
 NODE_ENTITY_DESCRIPTIONS = {
-    SensorEntityDescription(
+    TdarrSensorEntityDescription(
         key="node",
         translation_key="node",
         icon="mdi:server-network-outline",
     ),
-    SensorEntityDescription(
+    TdarrSensorEntityDescription(
         key="nodefps",
         translation_key="nodefps",
         icon="mdi:video",
@@ -123,12 +130,19 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
 class TdarrServerSensor(TdarrServerEntity, SensorEntity):
 
-    def __init__(self, coordinator, options, entity_description: SensorEntityDescription):
+    def __init__(self, coordinator, options, entity_description: TdarrSensorEntityDescription):
         _LOGGER.info("Creating server level sensor %s", entity_description.key)
         super().__init__(coordinator, entity_description)
 
+    @property
+    def description(self) -> TdarrSensorEntityDescription:
+        return self.entity_description
+
     @property 
     def native_value(self):
+        if self.description.value_fn:
+            return self.description.value_fn(self.data)
+
         if self.entity_description.key == "server":
             return self.data.get("server", {}).get("status")
         elif self.entity_description.key == "stats_spacesaved":
@@ -162,12 +176,19 @@ class TdarrServerSensor(TdarrServerEntity, SensorEntity):
 
 class TdarrLibrarySensor(TdarrLibraryEntity, SensorEntity):
 
-    def __init__(self, coordinator, library_id, options, entity_description: SensorEntityDescription):
+    def __init__(self, coordinator, library_id, options, entity_description: TdarrSensorEntityDescription):
         _LOGGER.info("Creating library %s level sensor %s", library_id, entity_description.key)
         super().__init__(coordinator, library_id, entity_description)
 
+    @property
+    def description(self) -> TdarrSensorEntityDescription:
+        return self.entity_description
+
     @property 
     def native_value(self):
+        if self.description.value_fn:
+            return self.description.value_fn(self.data)
+
         if self.entity_description.key == "library":
             return self.data.get("totalFiles")
 
@@ -191,8 +212,15 @@ class TdarrNodeSensor(TdarrNodeEntity, SensorEntity):
         _LOGGER.info("Creating node %s level sensor %s", node_id, entity_description.key)
         super().__init__(coordinator, node_id, entity_description)
 
+    @property
+    def description(self) -> TdarrSensorEntityDescription:
+        return self.entity_description
+
     @property 
     def native_value(self):
+        if self.description.value_fn:
+            return self.description.value_fn(self.data)
+
         if self.entity_description.key == "node":
             return "Online"
         elif self.entity_description.key == "nodefps":

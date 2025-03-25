@@ -214,44 +214,6 @@ class TdarrDataUpdateCoordinator(DataUpdateCoordinator):
         await asyncio.gather(*reload_tasks)
 
 class TdarrEntity(CoordinatorEntity):
-    def __init__(
-            self, *, device_id: str, coordinator: TdarrDataUpdateCoordinator
-    ):
-        """Initialize the entity."""
-        super().__init__(coordinator)
-        self._device_id = device_id
-
-    async def async_added_to_hass(self) -> None:
-        """When entity is added to hass."""
-        await super().async_added_to_hass()
-        self._handle_coordinator_update()
-
-    @property
-    def unique_id(self):
-        """Return the unique ID of the entity."""
-        return f"{self.coordinator.serverip}-{self._device_id}"
-
-    @property
-    def device_info(self):
-        """Return device information about this device."""
-        if self._device_id is None:
-            return None
-        
-        sw_version = "Unknown"
-
-        if "version" in self.coordinator.data["server"]:
-            sw_version = self.coordinator.data["server"]["version"]
-
-
-        return {
-            "identifiers": {(DOMAIN, self.coordinator.serverip)},
-            "name": f"Tdarr Server ({self.coordinator.serverip})",
-            #"hw_version": self.coordinator.data["system"]["hardware"],
-            "sw_version": sw_version,
-            "manufacturer": MANUFACTURER
-        }
-    
-class TdarrEntityV2(CoordinatorEntity):
 
     def __init__(self, coordinator: TdarrDataUpdateCoordinator, entity_description: EntityDescription):
         """Initialize the entity."""
@@ -274,7 +236,7 @@ class TdarrEntityV2(CoordinatorEntity):
         }
 
 
-class TdarrServerEntity(TdarrEntityV2):
+class TdarrServerEntity(TdarrEntity):
 
     @property
     def unique_id(self):
@@ -282,7 +244,7 @@ class TdarrServerEntity(TdarrEntityV2):
         return f"{self.coordinator.serverip}-server-{self.entity_description.key}"
 
 
-class TdarrLibraryEntity(TdarrEntityV2):
+class TdarrLibraryEntity(TdarrEntity):
 
     def __init__(self, coordinator: TdarrDataUpdateCoordinator, library_id: str, entity_description: EntityDescription):
         """Initialize the entity."""
@@ -299,7 +261,7 @@ class TdarrLibraryEntity(TdarrEntityV2):
         return self.coordinator.data.get("libraries", {}).get(self.library_id)
 
 
-class TdarrNodeEntity(TdarrEntityV2):
+class TdarrNodeEntity(TdarrEntity):
 
     def __init__(self, coordinator: TdarrDataUpdateCoordinator, node_id: str, entity_description: EntityDescription):
         """Initialize the entity."""

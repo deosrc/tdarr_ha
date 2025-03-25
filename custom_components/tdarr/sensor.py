@@ -8,7 +8,6 @@ from homeassistant.components.sensor import (
 )
 
 from . import (
-    TdarrEntity,
     TdarrServerEntity,
     TdarrLibraryEntity,
     TdarrNodeEntity,

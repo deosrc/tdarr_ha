@@ -1,16 +1,17 @@
 from dataclasses import replace
 import logging
-import re
 
 from homeassistant.components.sensor import (
     SensorEntity,
     SensorEntityDescription,
-    SensorDeviceClass,
-    SensorStateClass
+    SensorDeviceClass
 )
 
-from . import TdarrEntity
-from .const import DOMAIN, COORDINATOR, SENSORS
+from . import (
+    TdarrEntity,
+    TdarrServerEntity,
+)
+from .const import DOMAIN, COORDINATOR
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -99,8 +100,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     
     # Server Status Sensors
     for description in SERVER_ENTITY_DESCRIPTIONS:
-        legacy_sensor_dict_value = SENSORS[description.key]
-        sensors.append(TdarrServerSensor(entry, entry.data[legacy_sensor_dict_value["entry"]], config_entry.options, description))
+        sensors.append(TdarrServerSensor(entry, config_entry.options, description))
 
     # Server Library Sensors
     for value in entry.data["libraries"]:
@@ -196,20 +196,14 @@ class TdarrSensor(TdarrEntity, SensorEntity):
                     data["Resolutions"] = qualities
                     return data
 
-class TdarrServerSensor(TdarrEntity, SensorEntity):
+class TdarrServerSensor(TdarrServerEntity, SensorEntity):
     
     _attr_has_entity_name = True # Required for reading translation_key from EntityDescription
 
-    def __init__(self, coordinator, sensor, options, entity_description: SensorEntityDescription):
-        self.sensor = sensor
-        self.tdarroptions = options
-        self.entity_description = entity_description
+    def __init__(self, coordinator, options, entity_description: SensorEntityDescription):
+        _LOGGER.info("Creating server level sensor %s", entity_description.key)
+        super().__init__(coordinator, entity_description)
         self._attr = {}
-        self.coordinator = coordinator
-        if self.entity_description.key == "server":
-            self._device_id = "tdarr_server"
-        else:
-            self._device_id = "tdarr_" + self.entity_description.key
         # Required for HA 2022.7
         self.coordinator_context = object()
 

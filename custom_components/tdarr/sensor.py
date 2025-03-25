@@ -5,7 +5,8 @@ from typing import Callable
 from homeassistant.components.sensor import (
     SensorEntity,
     SensorEntityDescription,
-    SensorDeviceClass
+    SensorDeviceClass,
+    SensorStateClass,
 )
 
 from . import (
@@ -39,6 +40,7 @@ SERVER_ENTITY_DESCRIPTIONS = {
         icon="mdi:harddisk",
         native_unit_of_measurement="GB",
         device_class=SensorDeviceClass.DATA_SIZE,
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: data.get("stats", {}).get("sizeDiff"),
     ),
     TdarrSensorEntityDescription(
@@ -46,6 +48,7 @@ SERVER_ENTITY_DESCRIPTIONS = {
         translation_key="staged",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files",
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: data.get("staged", {}).get("totalCount"),
     ),
     TdarrSensorEntityDescription(
@@ -53,6 +56,7 @@ SERVER_ENTITY_DESCRIPTIONS = {
         translation_key="transcode_queued",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files",
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: data.get("stats", {}).get("table1Count"),
     ),
     TdarrSensorEntityDescription(
@@ -60,6 +64,7 @@ SERVER_ENTITY_DESCRIPTIONS = {
         translation_key="transcode_success",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files",
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: data.get("stats", {}).get("table2Count"),
     ),
     TdarrSensorEntityDescription(
@@ -67,6 +72,7 @@ SERVER_ENTITY_DESCRIPTIONS = {
         translation_key="transcode_error",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files",
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: data.get("stats", {}).get("table3Count"),
     ),
     TdarrSensorEntityDescription(
@@ -74,6 +80,7 @@ SERVER_ENTITY_DESCRIPTIONS = {
         translation_key="healthcheck_queued",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files",
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: data.get("stats", {}).get("table4Count"),
     ),
     TdarrSensorEntityDescription(
@@ -88,6 +95,7 @@ SERVER_ENTITY_DESCRIPTIONS = {
         translation_key="healthcheck_error",
         icon="mdi:medication-outline",
         native_unit_of_measurement="files",
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: data.get("stats", {}).get("table6Count"),
     ),
     TdarrSensorEntityDescription(
@@ -95,6 +103,7 @@ SERVER_ENTITY_DESCRIPTIONS = {
         translation_key="total_frame_rate",
         icon="mdi:video",
         native_unit_of_measurement="fps",
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: sum([get_node_fps(node_data) for _, node_data in data.get("nodes", {}).items()]),
     ),
 }
@@ -121,6 +130,7 @@ NODE_ENTITY_DESCRIPTIONS = {
         translation_key="frame_rate",
         icon="mdi:video",
         native_unit_of_measurement="fps",
+        state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: get_node_fps(data)
     )
 }

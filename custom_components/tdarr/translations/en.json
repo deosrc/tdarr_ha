@@ -53,8 +53,14 @@
     },
     "entity": {
         "sensor": {
+            "status": {
+                "name": "Status"
+            },
             "space_saved": {
                 "name": "Space Saved"
+            },
+            "staged": {
+                "name": "Staged"
             },
             "transcode_queued": {
                 "name": "Transode Remaining"
@@ -62,17 +68,14 @@
             "transcode_success": {
                 "name": "Transcoded"
             },
-            "staged": {
-                "name": "Staged"
-            },
-            "healthcheck_success": {
-                "name": "Healthy"
+            "transcode_error": {
+                "name": "Transcode Error"
             },
             "healthcheck_queued": {
                 "name": "Healthcheck Remaining"
             },
-            "transcode_error": {
-                "name": "Transcode Error"
+            "healthcheck_success": {
+                "name": "Healthy"
             },
             "healthcheck_error": {
                 "name": "Healthcheck Error"
@@ -82,9 +85,6 @@
             },
             "library": {
                 "name": "Library {library_name}"
-            },
-            "status": {
-                "name": "Status"
             },
             "frame_rate": {
                 "name": "Frame Rate"

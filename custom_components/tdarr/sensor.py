@@ -42,6 +42,13 @@ SERVER_ENTITY_DESCRIPTIONS = {
         value_fn=lambda data: data.get("stats", {}).get("sizeDiff"),
     ),
     TdarrSensorEntityDescription(
+        key="staged",
+        translation_key="staged",
+        icon="mdi:file-multiple",
+        native_unit_of_measurement="files",
+        value_fn=lambda data: data.get("staged", {}).get("totalCount"),
+    ),
+    TdarrSensorEntityDescription(
         key="transcode_queued",
         translation_key="transcode_queued",
         icon="mdi:file-multiple",
@@ -56,18 +63,11 @@ SERVER_ENTITY_DESCRIPTIONS = {
         value_fn=lambda data: data.get("stats", {}).get("table2Count"),
     ),
     TdarrSensorEntityDescription(
-        key="staged",
-        translation_key="staged",
+        key="transcode_error",
+        translation_key="transcode_error",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files",
-        value_fn=lambda data: data.get("staged", {}).get("totalCount"),
-    ),
-    TdarrSensorEntityDescription(
-        key="healthcheck_success",
-        translation_key="healthcheck_success",
-        icon="mdi:file-multiple",
-        native_unit_of_measurement="files",
-        value_fn=lambda data: data.get("stats", {}).get("table5Count"),
+        value_fn=lambda data: data.get("stats", {}).get("table3Count"),
     ),
     TdarrSensorEntityDescription(
         key="healthcheck_queued",
@@ -77,11 +77,11 @@ SERVER_ENTITY_DESCRIPTIONS = {
         value_fn=lambda data: data.get("stats", {}).get("table4Count"),
     ),
     TdarrSensorEntityDescription(
-        key="transcode_error",
-        translation_key="transcode_error",
+        key="healthcheck_success",
+        translation_key="healthcheck_success",
         icon="mdi:file-multiple",
         native_unit_of_measurement="files",
-        value_fn=lambda data: data.get("stats", {}).get("table3Count"),
+        value_fn=lambda data: data.get("stats", {}).get("table5Count"),
     ),
     TdarrSensorEntityDescription(
         key="healthcheck_error",

@@ -94,7 +94,8 @@ SERVER_ENTITY_DESCRIPTIONS = {
         key="stats_totalfps",
         translation_key="stats_totalfps",
         icon="mdi:video",
-        native_unit_of_measurement="fps"
+        native_unit_of_measurement="fps",
+        value_fn=lambda data: sum([get_node_fps(node_data) for _, node_data in data.get("nodes", {}).items()]),
     ),
 }
 
@@ -163,11 +164,7 @@ class TdarrServerSensor(TdarrServerEntity, SensorEntity):
     @property 
     def native_value(self):
         if self.description.value_fn:
-            return self.description.value_fn(self.data)
-
-        if self.entity_description.key == "stats_totalfps":
-            return sum([get_node_fps(node_data) for _, node_data in self.data.get("nodes", {}).items()])
-        
+            return self.description.value_fn(self.data)        
         raise NotImplementedError("Value implementation not available for library entity %s", self.entity_description.key)
 
     @property

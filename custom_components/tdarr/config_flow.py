@@ -34,7 +34,7 @@ async def validate_input(hass: core.HomeAssistant, data):
     
     tdarr = TdarrApiClient(data[SERVERIP], data[SERVERPORT], data[APIKEY])
 
-    result = await hass.async_add_executor_job(tdarr.getSettings)
+    result = await hass.async_add_executor_job(tdarr.get_global_settings)
     if result.get("status", "") == "ERROR":
         if "Invalid API key" in result["message"]:
             raise InvalidAPIKEY

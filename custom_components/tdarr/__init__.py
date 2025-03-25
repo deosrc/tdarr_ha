@@ -155,27 +155,27 @@ class TdarrDataUpdateCoordinator(DataUpdateCoordinator):
             async with async_timeout.timeout(30):
                 data = {}
                 data["server"] = await self._hass.async_add_executor_job(
-                    self.tdarr.getStatus  # Fetch new status
+                    self.tdarr.get_status  # Fetch new status
                 )
 
                 data["nodes"] = await self._hass.async_add_executor_job(
-                    self.tdarr.getNodes
+                    self.tdarr.get_nodes
                 )          
 
                 data["stats"] = await self._hass.async_add_executor_job(
-                    self.tdarr.getStats
+                    self.tdarr.get_stats
                 )
 
                 data["staged"] = await self._hass.async_add_executor_job(
-                    self.tdarr.getStaged
+                    self.tdarr.get_staged
                 )
 
                 data["libraries"] = await self._hass.async_add_executor_job(
-                    self.tdarr.getLibraries
+                    self.tdarr.get_libraries
                 )
 
                 data["globalsettings"] = await self._hass.async_add_executor_job(
-                    self.tdarr.getSettings
+                    self.tdarr.get_global_settings
                 )
                 #_LOGGER.debug(self.data)
                 if self.data is not None:

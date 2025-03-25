@@ -13,7 +13,7 @@ class TdarrApiClient(object):
             'x-api-key': apikey
         }
         
-    def getNodes(self):
+    def get_nodes(self):
         r = requests.get(self.baseurl + 'get-nodes', headers=self.headers)
         if r.status_code == 200:
             result = r.json()
@@ -21,7 +21,7 @@ class TdarrApiClient(object):
         else:
             return "ERROR"
 
-    def getStatus(self):
+    def get_status(self):
         r = requests.get(self.baseurl + 'status', headers=self.headers)
         if r.status_code == 200:
             result = r.json()
@@ -29,8 +29,8 @@ class TdarrApiClient(object):
         else:
             return "ERROR"
     
-    def getLibraries(self):
-        libraries = {l["_id"]: { "name": l["name"] } for l in self.getLibraryStats()} 
+    def get_libraries(self):
+        libraries = {l["_id"]: { "name": l["name"] } for l in self.get_library_settings()} 
         libraries.update({ 
             "": { 
                 "name": "All" 
@@ -39,11 +39,11 @@ class TdarrApiClient(object):
         _LOGGER.debug("Libraries: %s", libraries) 
  
         for key, value in libraries.items():
-            value.update(self.getPies(key))
+            value.update(self.get_pies(key))
         
         return libraries
 
-    def getStats(self):
+    def get_stats(self):
         post = {
             "data": {
                 "collection":"StatisticsJSONDB",
@@ -59,7 +59,7 @@ class TdarrApiClient(object):
         else:
             return "ERROR"
     
-    def getLibraryStats(self):
+    def get_library_settings(self):
         post = {
             "data": {
                 "collection":"LibrarySettingsJSONDB",
@@ -72,7 +72,7 @@ class TdarrApiClient(object):
             return r.json()
         else:
             return
-    def getPies(self, libraryID=""):
+    def get_pies(self, libraryID=""):
         post = {
             "data": {
                 "libraryId": libraryID
@@ -84,7 +84,7 @@ class TdarrApiClient(object):
         else:
             return "ERROR"
         
-    def getStaged(self):
+    def get_staged(self):
         post = {
             "data": {
                 "filters":[],
@@ -101,7 +101,7 @@ class TdarrApiClient(object):
         else:
             return "ERROR"
         
-    def getSettings(self):  
+    def get_global_settings(self):  
         post = {
             "data": {
                 "collection":"SettingsGlobalJSONDB",
@@ -142,8 +142,8 @@ class TdarrApiClient(object):
         }
         return requests.post(self.baseurl + 'update-node', json=data, headers=self.headers)
 
-    def refreshLibrary(self, libraryname, mode, folderpath):
-        stats = self.getLibraryStats()
+    def refresh_library(self, libraryname, mode, folderpath):
+        stats = self.get_library_settings()
         libid = None
         _LOGGER.debug(mode)
 

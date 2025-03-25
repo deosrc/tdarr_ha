@@ -114,14 +114,8 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         sensors.append(TdarrLibrarySensor(entry, library_id, config_entry.options, description))
 
     # Server Node Sensors
-    for node_id, data in entry.data["nodes"].items():
+    for node_id in entry.data["nodes"]:
         for description in NODE_ENTITY_DESCRIPTIONS:
-            description = replace(
-                description,
-                translation_placeholders={
-                    "node_name": data["nodeName"]
-                }
-            )
             sensors.append(TdarrNodeSensor(entry, node_id, config_entry.options, description))
 
     async_add_entities(sensors, True)

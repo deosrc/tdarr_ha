@@ -45,14 +45,8 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         switches.append(TdarrServerSwitch(entry, config_entry.options, description))
 
     # Node Switches
-    for key, value in entry.data["nodes"].items():
-        for d in NODE_ENTITY_DESCRIPTIONS:
-            description = replace(
-                d,
-                translation_placeholders={
-                    "node_name": value["nodeName"]
-                }
-            )
+    for key in entry.data["nodes"]:
+        for description in NODE_ENTITY_DESCRIPTIONS:
             sw = TdarrNodeSwitch(entry, key, config_entry.options, description)
             switches.append(sw)
 

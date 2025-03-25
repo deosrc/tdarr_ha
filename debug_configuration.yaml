@@ -7,3 +7,4 @@ logger:
 
 debugpy:
   start: true
+  # wait: true

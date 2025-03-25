@@ -43,5 +43,3 @@ Files are included in the repository for development in VSCode:
 4. To run Home Assistant with the component already installed:
     1. F1 > Run task
     2. Run Home Assistant
-
-**NOTE:** Breakpoints are not working with the current configuration.

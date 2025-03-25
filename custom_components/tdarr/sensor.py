@@ -23,6 +23,7 @@ class TdarrSensorEntityDescription(SensorEntityDescription):
     """Details of a Tdarr sensor entity""" 
  
     value_fn: Callable[[dict], str | int | float | None]
+    attributes_fn: Callable[[dict], dict | None] = None
 
 def get_node_fps(node_data: dict) -> int:
     return sum([worker_data.get("fps", 0) for _, worker_data in node_data.get("workers", {}).items()])
@@ -33,6 +34,7 @@ SERVER_ENTITY_DESCRIPTIONS = {
         translation_key="status",
         icon="mdi:server",
         value_fn=lambda data: data.get("server", {}).get("status"),
+        attributes_fn=lambda data: data.get("server", {})
     ),
     TdarrSensorEntityDescription(
         key="space_saved",
@@ -43,6 +45,7 @@ SERVER_ENTITY_DESCRIPTIONS = {
         device_class=SensorDeviceClass.DATA_SIZE,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: data.get("stats", {}).get("sizeDiff"),
+        attributes_fn=lambda data: data.get("stats" ,{})
     ),
     TdarrSensorEntityDescription(
         key="staged",
@@ -180,10 +183,8 @@ class TdarrServerSensor(TdarrServerEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self):
-        if self.entity_description.key == "server":
-            return self.data.get("server", {})
-        elif self.entity_description.key == "space_saved":
-            return self.data.get("stats", {})
+        if self.description.attributes_fn:
+            return self.description.attributes_fn(self.data)
 
 
 class TdarrLibrarySensor(TdarrLibraryEntity, SensorEntity):
@@ -202,16 +203,19 @@ class TdarrLibrarySensor(TdarrLibraryEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self):
-        video_info = self.data.get("video", {})
-        return {
-            "Total Files": self.data.get("totalFiles"),
-            "Number of Transcodes": self.data.get("totalTranscodeCount"),
-            "Space Saved (GB)": round(self.data.get("sizeDiff"), 0),
-            "Number of Health Checks": self.data.get("totalHealthCheckCount"),
-            "Codecs": {x["name"]: x["value"] for x in video_info.get("codecs", {})},
-            "Containers": {x["name"]: x["value"] for x in video_info.get("containers", {})},
-            "Resolutions": {x["name"]: x["value"] for x in video_info.get("resolutions", {})},
-        }
+        if self.description.attributes_fn:
+            return self.description.attributes_fn(self.data)
+        else:
+            video_info = self.data.get("video", {})
+            return {
+                "Total Files": self.data.get("totalFiles"),
+                "Number of Transcodes": self.data.get("totalTranscodeCount"),
+                "Space Saved (GB)": round(self.data.get("sizeDiff"), 0),
+                "Number of Health Checks": self.data.get("totalHealthCheckCount"),
+                "Codecs": {x["name"]: x["value"] for x in video_info.get("codecs", {})},
+                "Containers": {x["name"]: x["value"] for x in video_info.get("containers", {})},
+                "Resolutions": {x["name"]: x["value"] for x in video_info.get("resolutions", {})},
+            }
         
 
 class TdarrNodeSensor(TdarrNodeEntity, SensorEntity):
@@ -230,4 +234,7 @@ class TdarrNodeSensor(TdarrNodeEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self):
-        return self.data
+        if self.description.attributes_fn:
+            return self.description.attributes_fn(self.data)
+        else:
+            return self.data

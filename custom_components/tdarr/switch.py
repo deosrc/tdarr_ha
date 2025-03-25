@@ -33,7 +33,7 @@ class TdarrServerSwitchEntityDescription(TdarrSwitchEntityDescription):
     update_fn: Callable[[Server, bool], Response]
 
 @dataclass(frozen=True, kw_only=True) 
-class TdarrNodeSwitchEntityDescription(SwitchEntityDescription): 
+class TdarrNodeSwitchEntityDescription(TdarrSwitchEntityDescription): 
     """Details of a Tdarr node switch entity""" 
  
     update_fn: Callable[[Server, str, bool], None]

@@ -122,15 +122,10 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
 
 class TdarrServerSensor(TdarrServerEntity, SensorEntity):
-    
-    _attr_has_entity_name = True # Required for reading translation_key from EntityDescription
 
     def __init__(self, coordinator, options, entity_description: SensorEntityDescription):
         _LOGGER.info("Creating server level sensor %s", entity_description.key)
         super().__init__(coordinator, entity_description)
-        self._attr = {}
-        # Required for HA 2022.7
-        self.coordinator_context = object()
 
     @property 
     def native_value(self):
@@ -166,15 +161,10 @@ class TdarrServerSensor(TdarrServerEntity, SensorEntity):
 
 
 class TdarrLibrarySensor(TdarrLibraryEntity, SensorEntity):
-    
-    _attr_has_entity_name = True # Required for reading translation_key from EntityDescription
 
     def __init__(self, coordinator, library_id, options, entity_description: SensorEntityDescription):
         _LOGGER.info("Creating library %s level sensor %s", library_id, entity_description.key)
         super().__init__(coordinator, library_id, entity_description)
-        self._attr = {}
-        # Required for HA 2022.7
-        self.coordinator_context = object()
 
     @property 
     def native_value(self):
@@ -196,15 +186,10 @@ class TdarrLibrarySensor(TdarrLibraryEntity, SensorEntity):
         
 
 class TdarrNodeSensor(TdarrNodeEntity, SensorEntity):
-    
-    _attr_has_entity_name = True # Required for reading translation_key from EntityDescription
 
     def __init__(self, coordinator, node_id, options, entity_description: SensorEntityDescription):
         _LOGGER.info("Creating node %s level sensor %s", node_id, entity_description.key)
         super().__init__(coordinator, node_id, entity_description)
-        self._attr = {}
-        # Required for HA 2022.7
-        self.coordinator_context = object()
 
     @property 
     def native_value(self):

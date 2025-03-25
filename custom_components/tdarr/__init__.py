@@ -222,10 +222,15 @@ class TdarrDataUpdateCoordinator(DataUpdateCoordinator):
 
 class TdarrEntity(CoordinatorEntity):
 
+    _attr_has_entity_name = True # Required for reading translation_key from EntityDescription
+
     def __init__(self, coordinator: TdarrDataUpdateCoordinator, entity_description: EntityDescription):
         """Initialize the entity."""
         super().__init__(coordinator)
         self.entity_description = entity_description
+        
+        # Required for HA 2022.7
+        self.coordinator_context = object()
 
     async def async_added_to_hass(self) -> None:
         """When entity is added to hass."""

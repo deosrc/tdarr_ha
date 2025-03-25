@@ -55,8 +55,6 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 class TdarrServerSwitch(TdarrServerEntity, SwitchEntity):
     """A Tdarr server level switch"""
 
-    _attr_has_entity_name = True # Required for reading translation_key from EntityDescription
-
     def __init__(self, coordinator, options, entity_description: SwitchEntityDescription):
         _LOGGER.info("Creating server level switch %s", entity_description.key)
         super().__init__(coordinator, entity_description)
@@ -103,8 +101,6 @@ class TdarrServerSwitch(TdarrServerEntity, SwitchEntity):
 
 class TdarrNodeSwitch(TdarrNodeEntity, SwitchEntity):
     """A Tdarr node level switch"""
-
-    _attr_has_entity_name = True # Required for reading translation_key from EntityDescription
 
     def __init__(self, coordinator, node_id, options, entity_description: SwitchEntityDescription):
         _LOGGER.info("Creating node %s level switch %s", node_id, entity_description.key)

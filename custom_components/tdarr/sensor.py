@@ -10,6 +10,7 @@ from homeassistant.components.sensor import (
 from . import (
     TdarrEntity,
     TdarrServerEntity,
+    TdarrLibraryEntity,
     TdarrNodeEntity,
 )
 from .const import DOMAIN, COORDINATOR
@@ -111,7 +112,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
                 "library_name": data["name"]
             }
         )
-        sensors.append(TdarrLibrarySensor(entry, library_id, data, config_entry.options, description))
+        sensors.append(TdarrLibrarySensor(entry, library_id, config_entry.options, description))
 
     # Server Node Sensors
     for node_id, data in entry.data["nodes"].items():
@@ -171,27 +172,16 @@ class TdarrServerSensor(TdarrServerEntity, SensorEntity):
             return self.coordinator.data.get("stats", {})
 
 
-class TdarrLibrarySensor(TdarrEntity, SensorEntity):
+class TdarrLibrarySensor(TdarrLibraryEntity, SensorEntity):
     
     _attr_has_entity_name = True # Required for reading translation_key from EntityDescription
 
-    def __init__(self, coordinator, library_id, sensor, options, entity_description: SensorEntityDescription):
-        self.library_id = library_id
-        self.sensor = sensor
-        self.tdarroptions = options
-        self.entity_description = entity_description
+    def __init__(self, coordinator, library_id, options, entity_description: SensorEntityDescription):
+        _LOGGER.info("Creating library %s level sensor %s", library_id, entity_description.key)
+        super().__init__(coordinator, library_id, entity_description)
         self._attr = {}
-        self.coordinator = coordinator
-        if self.entity_description.key == "library":
-            self._device_id = "tdarr_library_" + self.sensor["name"]
-        else:
-            raise NotImplementedError(f"Unrecognised sensor type {self.entity_description.key}")
         # Required for HA 2022.7
         self.coordinator_context = object()
-    
-    @property
-    def library_data(self):
-        return self.coordinator.data.get("libraries",{}).get(self.library_id)
 
     @property 
     def native_value(self):

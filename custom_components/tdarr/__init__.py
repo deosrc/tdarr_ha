@@ -282,6 +282,23 @@ class TdarrServerEntity(TdarrEntityV2):
         return f"{self.coordinator.serverip}-server-{self.entity_description.key}"
 
 
+class TdarrLibraryEntity(TdarrEntityV2):
+
+    def __init__(self, coordinator: TdarrDataUpdateCoordinator, library_id: str, entity_description: EntityDescription):
+        """Initialize the entity."""
+        super().__init__(coordinator, entity_description)
+        self.library_id = library_id
+
+    @property
+    def unique_id(self):
+        """Return the unique ID of the entity."""
+        return f"{self.coordinator.serverip}-library-{self.library_id}-{self.entity_description.key}"
+    
+    @property
+    def library_data(self):
+        return self.coordinator.data.get("libraries", {}).get(self.library_id)
+
+
 class TdarrNodeEntity(TdarrEntityV2):
 
     def __init__(self, coordinator: TdarrDataUpdateCoordinator, node_id: str, entity_description: EntityDescription):
@@ -296,4 +313,4 @@ class TdarrNodeEntity(TdarrEntityV2):
     
     @property
     def node_data(self):
-        return self.coordinator.data.get("nodes").get(self.node_id)
+        return self.coordinator.data.get("nodes", {}).get(self.node_id)

@@ -63,28 +63,28 @@
                 "name": "Staged"
             },
             "transcode_queued": {
-                "name": "Transode Remaining"
+                "name": "Transcode: Queued"
             },
             "transcode_success": {
-                "name": "Transcoded"
+                "name": "Transcode: Success"
             },
             "transcode_error": {
-                "name": "Transcode Error"
+                "name": "Transcode: Error"
             },
             "healthcheck_queued": {
-                "name": "Healthcheck Remaining"
+                "name": "Health Check: Queued"
             },
             "healthcheck_success": {
-                "name": "Healthy"
+                "name": "Health Check: Success"
             },
             "healthcheck_error": {
-                "name": "Healthcheck Error"
+                "name": "Health Check: Error"
             },
             "total_frame_rate": {
-                "name": "Total FPS"
+                "name": "Total Frame Rate"
             },
             "library": {
-                "name": "Library {library_name}"
+                "name": "Library: {library_name}"
             },
             "frame_rate": {
                 "name": "Frame Rate"

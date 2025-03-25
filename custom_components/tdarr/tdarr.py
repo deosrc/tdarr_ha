@@ -117,48 +117,30 @@ class Server(object):
         else:
             return {"message": r.text, "status_code": r.status_code, "status": "ERROR"}
         
-    def pauseNode(self, nodeID, status):
-
-        if nodeID == "pauseAll":
-            data = {
-                "data":{
-                    "collection":"SettingsGlobalJSONDB",
-                    "mode":"update",
-                    "docID":"globalsettings",
-                    "obj":{
-                        "pauseAllNodes": status
-                        }
-                    },
-                    "timeout":20000
+    def set_global_setting(self, setting_key, value) -> requests.Response:
+        data = {
+            "data":{
+                "collection":"SettingsGlobalJSONDB",
+                "mode":"update",
+                "docID":"globalsettings",
+                "obj":{
+                    setting_key: value
                 }
-            r = requests.post(self.baseurl + 'cruddb', json=data, headers=self.headers)
-        elif nodeID == "ignoreSchedules":
-            data = {
-                "data":{
-                    "collection":"SettingsGlobalJSONDB",
-                    "mode":"update",
-                    "docID":"globalsettings",
-                    "obj":{
-                        "ignoreSchedules": status
-                        }
-                    },
-                    "timeout":20000
-                }
-            r = requests.post(self.baseurl + 'cruddb', json=data, headers=self.headers)
-        else:
-            data = {
-                "data": {
-                    "nodeID": nodeID,
-                    "nodeUpdates": {
-                        "nodePaused": status
-                    }
+            },
+            "timeout":20000
+        }
+        return requests.post(self.baseurl + 'cruddb', json=data, headers=self.headers)
+        
+    def set_node_paused_state(self, nodeID, status) -> requests.Response:
+        data = {
+            "data": {
+                "nodeID": nodeID,
+                "nodeUpdates": {
+                    "nodePaused": status
                 }
             }
-            r = requests.post(self.baseurl + 'update-node', json=data, headers=self.headers)
-        if r.status_code == 200:
-            return "OK"
-        else:
-            return "ERROR"
+        }
+        return requests.post(self.baseurl + 'update-node', json=data, headers=self.headers)
 
     def refreshLibrary(self, libraryname, mode, folderpath):
         stats = self.getLibraryStats()

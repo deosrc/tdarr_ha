@@ -1,37 +1,66 @@
-from dataclasses import replace
+from dataclasses import dataclass, replace
 import logging
+from typing import Callable
 
 from homeassistant.core import callback
 from homeassistant.components.switch import (
     SwitchEntity,
     SwitchEntityDescription
 )
+from homeassistant.exceptions import HomeAssistantError
+from requests import HTTPError, Response
 
 from . import (
     TdarrServerEntity,
     TdarrNodeEntity,
 )
 from .const import DOMAIN, COORDINATOR
+from .tdarr import Server
 
 _LOGGER = logging.getLogger(__name__)
 
+
+@dataclass(frozen=True, kw_only=True) 
+class TdarrSwitchEntityDescription(SwitchEntityDescription): 
+    """Details of a Tdarr switch entity""" 
+ 
+    value_fn: Callable[[dict], bool | None]
+
+@dataclass(frozen=True, kw_only=True) 
+class TdarrServerSwitchEntityDescription(TdarrSwitchEntityDescription): 
+    """Details of a Tdarr server switch entity""" 
+ 
+    update_fn: Callable[[Server, bool], Response]
+
+@dataclass(frozen=True, kw_only=True) 
+class TdarrNodeSwitchEntityDescription(SwitchEntityDescription): 
+    """Details of a Tdarr node switch entity""" 
+ 
+    update_fn: Callable[[Server, str, bool], None]
+
 SERVER_ENTITY_DESCRIPTIONS = {
-    SwitchEntityDescription(
+    TdarrServerSwitchEntityDescription(
         key="pauseAll",
         translation_key="pause_all",
-        icon="mdi:pause-circle"
+        icon="mdi:pause-circle",
+        value_fn=lambda data: data.get("globalsettings", {}).get("pauseAllNodes"),
+        update_fn=lambda server, state: server.set_global_setting("pauseAll", state),
     ),
-    SwitchEntityDescription(
+    TdarrServerSwitchEntityDescription(
         key="ignoreSchedules",
         translation_key="ignore_schedules",
-        icon="mdi:calendar-remove"
+        icon="mdi:calendar-remove",
+        value_fn=lambda data: data.get("globalsettings", {}).get("ignoreSchedules"),
+        update_fn=lambda server, state: server.set_global_setting("ignoreSchedules", state),
     ),
 }
 
 NODE_ENTITY_DESCRIPTIONS = {
-    SwitchEntityDescription(
+    TdarrNodeSwitchEntityDescription(
         key="paused",
-        translation_key="node_paused"
+        translation_key="node_paused",
+        value_fn=lambda data: data.get("nodePaused"),
+        update_fn=lambda server, node_id, state: server.set_node_paused_state(node_id, state),
     )
 }
 
@@ -55,19 +84,13 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 class TdarrServerSwitch(TdarrServerEntity, SwitchEntity):
     """A Tdarr server level switch"""
 
-    def __init__(self, coordinator, options, entity_description: SwitchEntityDescription):
+    def __init__(self, coordinator, options, entity_description: TdarrServerSwitchEntityDescription):
         _LOGGER.info("Creating server level switch %s", entity_description.key)
         super().__init__(coordinator, entity_description)
 
-        if entity_description.key == "pauseAll":
-            self._device_id = "tdarr_pause_all"
-        elif entity_description.key == "ignoreSchedules":
-            self._device_id = "tdarr_ignore_schedules"
-        else:
-            raise NotImplementedError(f"Unknown server switch key {entity_description.key}")
-        
-        # Required for HA 2022.7
-        self.coordinator_context = object()
+    @property
+    def description(self) -> TdarrServerSwitchEntityDescription:
+        return self.entity_description
 
     async def async_turn_on(self, **kwargs):
         return await self.async_set_state(True)
@@ -75,38 +98,38 @@ class TdarrServerSwitch(TdarrServerEntity, SwitchEntity):
     async def async_turn_off(self, **kwargs):
         return await self.async_set_state(False)
 
-    async def async_set_state(self, paused: bool):
-        update = await self.coordinator.hass.async_add_executor_job(
-            self.coordinator.tdarr.pauseNode,
-            self.entity_description.key,
-            paused
-        )
+    async def async_set_state(self, state: bool):
+        def update_action():
+            return self.description.update_fn(self.coordinator.tdarr, state)
 
-        if update == "OK":
-            self._attr_is_on = paused 
-            self.async_write_ha_state() 
-            await self.coordinator.async_request_refresh() 
+        try:
+            response: Response = await self.coordinator.hass.async_add_executor_job(update_action)
+        except HTTPError as e:
+            raise HomeAssistantError(f"Error setting {self.entity_description.key} switch: {e}")
+        
+        if response.status_code >= 400:
+            raise HomeAssistantError(f"Error response received setting {self.entity_description.key} switch: {response.status_code} {response.reason}")
+
+        self._attr_is_on = state
+        self.async_write_ha_state()
+        await self.coordinator.async_request_refresh()
  
     @callback 
     def _handle_coordinator_update(self) -> None: 
-        """Handle updated data from the coordinator.""" 
-        if  self.entity_description.key == "pauseAll":
-            self._attr_is_on = self.coordinator.data["globalsettings"]["pauseAllNodes"]
-        elif self.entity_description.key == "ignoreSchedules":
-            self._attr_is_on = self.coordinator.data["globalsettings"]["ignoreSchedules"]
-        else:
-            raise NotImplementedError(f"Unknown server switch key {self.entity_description.key}")
-            
+        """Handle updated data from the coordinator."""
+        self._attr_is_on = self.description.value_fn(self.data)
         self.async_write_ha_state()
 
 class TdarrNodeSwitch(TdarrNodeEntity, SwitchEntity):
     """A Tdarr node level switch"""
 
-    def __init__(self, coordinator, node_id, options, entity_description: SwitchEntityDescription):
+    def __init__(self, coordinator, node_id, options, entity_description: TdarrNodeSwitchEntityDescription):
         _LOGGER.info("Creating node %s level switch %s", node_id, entity_description.key)
         super().__init__(coordinator, node_id, entity_description)
-        # Required for HA 2022.7
-        self.coordinator_context = object()
+
+    @property
+    def description(self) -> TdarrNodeSwitchEntityDescription:
+        return self.entity_description
 
     async def async_turn_on(self, **kwargs):
         return await self.async_set_state(True)
@@ -114,24 +137,25 @@ class TdarrNodeSwitch(TdarrNodeEntity, SwitchEntity):
     async def async_turn_off(self, **kwargs):
         return await self.async_set_state(False)
 
-    async def async_set_state(self, paused: bool):
-        if self.entity_description.key != 'paused':
-            raise NotImplementedError(f"Unknown node switch type {self.entity_description.key}")
+    async def async_set_state(self, state: bool):
+        def update_action():
+            return self.description.update_fn(self.coordinator.tdarr, self.node_id, state)
         
-        update = await self.coordinator.hass.async_add_executor_job(
-            self.coordinator.tdarr.pauseNode,
-            self.node_id,
-            paused
-        )
+        try:
+            response: Response = await self.coordinator.hass.async_add_executor_job(update_action)
+        except HTTPError as e:
+            raise HomeAssistantError(f"Error setting {self.entity_description.key} switch: {e}")
+        
+        if response.status_code >= 400:
+            raise HomeAssistantError(f"Error response received setting {self.entity_description.key} switch: {response.status_code} {response.reason}")
 
-        if update == "OK":
-            self._attr_is_on = paused 
-            self.async_write_ha_state() 
-            await self.coordinator.async_request_refresh() 
+        self._attr_is_on = state 
+        self.async_write_ha_state()
+        await self.coordinator.async_request_refresh() 
  
     @callback 
     def _handle_coordinator_update(self) -> None: 
         """Handle updated data from the coordinator."""
-        self._attr_is_on = self.data["nodePaused"]
+        self._attr_is_on = self.description.value_fn(self.data)
         self.async_write_ha_state()
 

@@ -68,7 +68,7 @@
             "stats_stagedcount": {
                 "name": "Staged"
             },
-            "stats_healthcount": {
+            "stats_healthycount": {
                 "name": "Healthy"
             },
             "stats_transcodeerrorcount": {

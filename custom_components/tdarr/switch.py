@@ -30,14 +30,12 @@ class TdarrSwitchEntityDescription(SwitchEntityDescription):
 class TdarrServerSwitchEntityDescription(TdarrSwitchEntityDescription): 
     """Details of a Tdarr server switch entity""" 
  
-    value_fn: Callable[[dict], bool | None]
     update_fn: Callable[[Server, bool], Response]
 
 @dataclass(frozen=True, kw_only=True) 
 class TdarrNodeSwitchEntityDescription(SwitchEntityDescription): 
     """Details of a Tdarr node switch entity""" 
  
-    value_fn: Callable[[dict], bool | None]
     update_fn: Callable[[Server, str, bool], None]
 
 SERVER_ENTITY_DESCRIPTIONS = {

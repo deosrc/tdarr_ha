@@ -33,7 +33,7 @@ from .const import (
     APIKEY
 )
 
-from .tdarr import TdarrApiClient
+from .api import TdarrApiClient
 
 CONFIG_SCHEMA = vol.Schema({DOMAIN: vol.Schema({})}, extra=vol.ALLOW_EXTRA)
 

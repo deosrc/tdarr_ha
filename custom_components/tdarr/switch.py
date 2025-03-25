@@ -15,7 +15,7 @@ from . import (
     TdarrNodeEntity,
 )
 from .const import DOMAIN, COORDINATOR
-from .tdarr import TdarrApiClient
+from .api import TdarrApiClient
 
 _LOGGER = logging.getLogger(__name__)
 

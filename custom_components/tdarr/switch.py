@@ -62,7 +62,7 @@ NODE_ENTITY_DESCRIPTIONS = {
         translation_key="node_paused",
         icon="mdi:pause-circle",
         value_fn=lambda data: data.get("nodePaused"),
-        update_fn=lambda server, node_id, state: server.set_node_paused_state(node_id, state),
+        update_fn=lambda server, node_id, state: server.set_node_setting(node_id, "nodePaused", state),
     )
 }
 
@@ -118,9 +118,9 @@ class TdarrServerSwitch(TdarrServerEntity, SwitchEntity):
 class TdarrNodeSwitch(TdarrNodeEntity, SwitchEntity):
     """A Tdarr node level switch"""
 
-    def __init__(self, coordinator: TdarrDataUpdateCoordinator, node_id: str, options, entity_description: TdarrNodeSwitchEntityDescription):
-        _LOGGER.info("Creating node %s level switch %s", node_id, entity_description.key)
-        super().__init__(coordinator, node_id, entity_description)
+    def __init__(self, coordinator: TdarrDataUpdateCoordinator, node_key: str, options, entity_description: TdarrNodeSwitchEntityDescription):
+        _LOGGER.info("Creating node %s level switch %s", node_key, entity_description.key)
+        super().__init__(coordinator, node_key, entity_description)
 
     @property
     def description(self) -> TdarrNodeSwitchEntityDescription:
@@ -133,7 +133,7 @@ class TdarrNodeSwitch(TdarrNodeEntity, SwitchEntity):
         return await self.async_set_state(False)
 
     async def async_set_state(self, state: bool):
-        await self.description.update_fn(self.coordinator.tdarr, self.node_id, state)
+        await self.description.update_fn(self.coordinator.tdarr, self.tdarr_node_id, state)
         self._attr_is_on = state 
         self.async_write_ha_state()
         await self.coordinator.async_request_refresh() 

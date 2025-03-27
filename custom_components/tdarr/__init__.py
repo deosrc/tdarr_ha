@@ -178,25 +178,29 @@ class TdarrLibraryEntity(TdarrEntity):
         return f"{self.coordinator.serverip}-library-{self.library_id}-{self.entity_description.key}"
     
     @property
-    def data(self):
+    def data(self) -> dict:
         return self.coordinator.data.get("libraries", {}).get(self.library_id)
 
 
 class TdarrNodeEntity(TdarrEntity):
 
-    def __init__(self, coordinator: TdarrDataUpdateCoordinator, node_id: str, entity_description: EntityDescription):
+    def __init__(self, coordinator: TdarrDataUpdateCoordinator, node_key: str, entity_description: EntityDescription):
         """Initialize the entity."""
         super().__init__(coordinator, entity_description)
-        self.node_id = node_id
+        self.node_key = node_key
 
     @property
     def unique_id(self):
         """Return the unique ID of the entity."""
-        return f"{self.coordinator.serverip}-node-{self.node_id}-{self.entity_description.key}"
+        return f"{self.coordinator.serverip}-node-{self.node_key}-{self.entity_description.key}"
     
     @property
-    def data(self):
-        return self.coordinator.data.get("nodes", {}).get(self.node_id)
+    def tdarr_node_id(self) -> str | None:
+        return self.data.get("_id")
+    
+    @property
+    def data(self) -> dict:
+        return self.coordinator.data.get("nodes", {}).get(self.node_key, {})
 
     @property
     def device_info(self):
@@ -206,7 +210,7 @@ class TdarrNodeEntity(TdarrEntity):
 
         # Override the identifier and name to produce a new device
         device_info.update({
-            ATTR_IDENTIFIERS: {(DOMAIN, self.coordinator.serverip, "node", self.node_id)},
+            ATTR_IDENTIFIERS: {(DOMAIN, self.coordinator.serverip, "node", self.node_key)},
             ATTR_NAME: f"Tdarr Node ({self.data.get("nodeName")})",
             ATTR_VIA_DEVICE: server_identifier,
         })

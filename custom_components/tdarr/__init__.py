@@ -195,6 +195,10 @@ class TdarrNodeEntity(TdarrEntity):
         return f"{self.coordinator.serverip}-node-{self.node_key}-{self.entity_description.key}"
     
     @property
+    def tdarr_node_id(self) -> str | None:
+        return self.data.get("_id")
+    
+    @property
     def data(self) -> dict:
         return self.coordinator.data.get("nodes", {}).get(self.node_key, {})
 

@@ -130,7 +130,7 @@ class TdarrNodeSwitch(TdarrNodeEntity, SwitchEntity):
         return await self.async_set_state(False)
 
     async def async_set_state(self, state: bool):
-        await self.description.update_fn(self.coordinator.tdarr, self.node_key, state)
+        await self.description.update_fn(self.coordinator.tdarr, self.tdarr_node_id, state)
         self._attr_is_on = state 
         self.async_write_ha_state()
         await self.coordinator.async_request_refresh() 

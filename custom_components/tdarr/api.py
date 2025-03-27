@@ -162,13 +162,19 @@ class TdarrApiClient(object):
         
         return response
         
-    async def set_node_paused_state(self, node_id, status):
-        _LOGGER.debug("Setting node '%s' paused state to '%s' for %s", node_id, status, self._id)
+    async def set_node_paused_state(self, node_id: str, state: bool):
+        """Set the paused state of a node.
+        
+        args:
+            node_id: The Tdarr node ID. NOTE: This may be different from the node key used internally by the integration.
+            state: The paused state to set
+        """
+        _LOGGER.debug("Setting node '%s' paused state to '%s' for %s", node_id, state, self._id)
         data = {
             "data": {
                 "nodeID": node_id,
                 "nodeUpdates": {
-                    "nodePaused": status
+                    "nodePaused": state
                 }
             }
         }

@@ -1,36 +1,24 @@
+import asyncio
 import logging
-from urllib.parse import urljoin
-import requests
+import aiohttp
+
+from homeassistant.exceptions import HomeAssistantError
 
 _LOGGER = logging.getLogger(__name__)
 
-class TdarrServerSession(requests.Session):
-    """Requests session with the base URL and headers configured."""
-
-    def __init__(self, url, port, api_key=""):
-        super().__init__()
-        self.headers.update({
-            'Content-Type': 'application/json',
-            'x-api-key': api_key
-        })
-        self._base_url = 'http://' + url + ':' + port + '/api/v2/'
-
-    def request(self, method, url, *args, **kwargs):
-        full_url = urljoin(self._base_url, url)
-        return super().request(method, full_url, *args, **kwargs)
 
 class TdarrApiClient(object):
     """API Client for interacting with a Tdarr server"""
 
-    def __init__(self, url, port, api_key=""):
-        self._id = f"{url}:{port}"
-        self._session = TdarrServerSession(url, port, api_key)
+    def __init__(self, id: str, session: aiohttp.ClientSession):
+        self._id = id
+        self._session = session
         
-    def get_nodes(self):
+    async def get_nodes(self):
         _LOGGER.debug("Retrieving nodes from %s", self._id)
-        r = self._session.get('get-nodes')
-        if r.status_code == 200:
-            data = r.json()
+        r = await self._session.get('get-nodes')
+        if r.status == 200:
+            data = await r.json()
 
             # Node IDs can change when node is restarted, so replace with node name instead.
             # Fallback to ID if node name is unavailable for some reason.
@@ -40,18 +28,19 @@ class TdarrApiClient(object):
         else:
             return "ERROR"
 
-    def get_status(self):
+    async def get_status(self):
         _LOGGER.debug("Retrieving status from %s", self._id)
-        r = self._session.get('status')
-        if r.status_code == 200:
-            result = r.json()
+        r = await self._session.get('status')
+        if r.status == 200:
+            result = await r.json()
             return result
         else:
             return "ERROR"
     
-    def get_libraries(self):
+    async def get_libraries(self):
         _LOGGER.debug("Retrieving libraries from %s", self._id)
-        libraries = {l["_id"]: { "name": l["name"] } for l in self.get_library_settings()} 
+        library_settings = await self.get_library_settings()
+        libraries = {l["_id"]: { "name": l["name"] } for l in library_settings}
         libraries.update({ 
             "": { 
                 "name": "All" 
@@ -59,12 +48,16 @@ class TdarrApiClient(object):
         }) 
         _LOGGER.debug("Libraries: %s", libraries) 
  
-        for key, value in libraries.items():
-            value.update(self.get_pies(key))
+        async def update_library_details(library_id, data: dict):
+            data.update(await self.get_pies(library_id))
+
+        async with asyncio.TaskGroup() as tg:
+            for library_id, data in libraries.items():
+                tg.create_task(update_library_details(library_id, data))
         
         return libraries
 
-    def get_stats(self):
+    async def get_stats(self):
         _LOGGER.debug("Retrieving stats from %s", self._id)
         post = {
             "data": {
@@ -75,13 +68,13 @@ class TdarrApiClient(object):
                 },
             "timeout":1000
         }
-        r = self._session.post('cruddb', json = post)
-        if r.status_code == 200:
-            return r.json()
+        r = await self._session.post('cruddb', json = post)
+        if r.status == 200:
+            return await r.json()
         else:
             return "ERROR"
     
-    def get_library_settings(self):
+    async def get_library_settings(self):
         _LOGGER.debug("Retrieving library settings from %s", self._id)
         post = {
             "data": {
@@ -90,26 +83,27 @@ class TdarrApiClient(object):
                 },
             "timeout":20000
         }
-        r = self._session.post('cruddb', json = post)
-        if r.status_code == 200:
-            return r.json()
+        r = await self._session.post('cruddb', json = post)
+        if r.status == 200:
+            return await r.json()
         else:
             return
         
-    def get_pies(self, library_id=""):
+    async def get_pies(self, library_id=""):
         _LOGGER.debug("Retrieving pies for library ID '%s' from %s", library_id, self._id)
         post = {
             "data": {
                 "libraryId": library_id
             },
         }
-        r = self._session.post('stats/get-pies', json = post)
-        if r.status_code == 200:
-            return r.json()["pieStats"]
+        r = await self._session.post('stats/get-pies', json = post)
+        if r.status == 200:
+            data = await r.json()
+            return data["pieStats"]
         else:
             return "ERROR"
         
-    def get_staged(self):
+    async def get_staged(self):
         _LOGGER.debug("Retrieving staged files from %s", self._id)
         post = {
             "data": {
@@ -121,13 +115,13 @@ class TdarrApiClient(object):
                 },
             "timeout":1000
         }
-        r = self._session.post('client/staged', json = post)
-        if r.status_code == 200:
-            return r.json()
+        r = await self._session.post('client/staged', json = post)
+        if r.status == 200:
+            return await r.json()
         else:
             return "ERROR"
         
-    def get_global_settings(self):  
+    async def get_global_settings(self):  
         _LOGGER.debug("Retrieving global settings from %s", self._id)
         post = {
             "data": {
@@ -138,13 +132,13 @@ class TdarrApiClient(object):
                 },
             "timeout":1000
         }
-        r = self._session.post('cruddb', json = post)
-        if r.status_code == 200:
-            return r.json()
+        r = await self._session.post('cruddb', json = post)
+        if r.status == 200:
+            return await r.json()
         else:
             return {"message": r.text, "status_code": r.status_code, "status": "ERROR"}
         
-    def set_global_setting(self, setting_key, value):
+    async def set_global_setting(self, setting_key, value):
         _LOGGER.debug("Setting global setting '%s' for %s", setting_key, self._id)
         data = {
             "data":{
@@ -157,10 +151,19 @@ class TdarrApiClient(object):
             },
             "timeout":20000
         }
-        return self._session.post('cruddb', json=data)
+
+        try:
+            response = await self._session.post('cruddb', json=data)            
+        except aiohttp.ClientError as e:
+            raise HomeAssistantError(f"Error setting {self.entity_description.key} switch: {e}")
         
-    def set_node_paused_state(self, node_id, status):
-        _LOGGER.debug("Setting node '%s' paused state to '%b' for %s", node_id, status, self._id)
+        if response.status >= 400:
+            raise HomeAssistantError(f"Error response received setting {self.entity_description.key} switch: {response.status_code} {response.reason}")
+        
+        return response
+        
+    async def set_node_paused_state(self, node_id, status):
+        _LOGGER.debug("Setting node '%s' paused state to '%s' for %s", node_id, status, self._id)
         data = {
             "data": {
                 "nodeID": node_id,
@@ -169,11 +172,20 @@ class TdarrApiClient(object):
                 }
             }
         }
-        return self._session.post('update-node', json=data)
 
-    def refresh_library(self, library_name, mode, folder_path):
+        try:
+            response = await self._session.post('update-node', json=data)            
+        except aiohttp.ClientError as e:
+            raise HomeAssistantError(f"Error setting {self.entity_description.key} switch: {e}")
+        
+        if response.status >= 400:
+            raise HomeAssistantError(f"Error response received setting {self.entity_description.key} switch: {response.status_code} {response.reason}")
+        
+        return response
+
+    async def refresh_library(self, library_name, mode, folder_path):
         _LOGGER.debug("Refreshing library '%s' using mode '%s' for %s", library_name, mode, self._id)
-        stats = self.get_library_settings()
+        stats = await self.get_library_settings()
         libid = None
 
         if mode == "":
@@ -196,13 +208,16 @@ class TdarrApiClient(object):
             }
         }
 
-        r = self._session.post("scan-files", json=data)
-
-        if r.status_code == 200:
-            _LOGGER.debug(r.text)
-            return {"SUCCESS"}
-        else:
-            return {"ERROR": r.text}
+        try:
+            response = await self._session.post('scan-files', json=data)            
+        except aiohttp.ClientError as e:
+            raise HomeAssistantError(f"Error setting {self.entity_description.key} switch: {e}")
+        
+        if response.status >= 400:
+            raise HomeAssistantError(f"Error response received setting {self.entity_description.key} switch: {response.status_code} {response.reason}")
+        
+        _LOGGER.debug(await response.text())
+        return "SUCCESS"
 
 
 

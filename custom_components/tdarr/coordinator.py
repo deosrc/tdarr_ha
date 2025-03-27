@@ -4,6 +4,7 @@ import logging
 from datetime import timedelta
 
 import async_timeout
+from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
@@ -21,12 +22,19 @@ _LOGGER = logging.getLogger(__name__)
 class TdarrDataUpdateCoordinator(DataUpdateCoordinator[dict]):
     """DataUpdateCoordinator to handle fetching new data about the Tdarr Controller."""
 
-    def __init__(self, hass, serverip, serverport, update_interval, apikey):
+    def __init__(self, hass, serverip, serverport, update_interval, api_key):
         """Initialize the coordinator and set up the Controller object."""
         self._hass = hass
         self.serverip = serverip
-        self.serverport = serverport
-        self.tdarr = TdarrApiClient(serverip, serverport, apikey)
+
+        self._session = async_create_clientsession(
+            hass,
+            base_url=f"http://{serverip}:{serverport}/api/v2/",
+            headers={
+                'Content-Type': 'application/json',
+                'x-api-key': api_key
+            })
+        self.tdarr = TdarrApiClient(f"{serverip}:{serverport}", self._session)
         self._available = True
 
         super().__init__(
@@ -40,13 +48,21 @@ class TdarrDataUpdateCoordinator(DataUpdateCoordinator[dict]):
         """Fetch data from Tdarr Server."""
         try:
             async with async_timeout.timeout(30):
+                async with asyncio.TaskGroup() as tg:
+                    status = tg.create_task(self.tdarr.get_status())
+                    nodes = tg.create_task(self.tdarr.get_nodes())
+                    stats = tg.create_task(self.tdarr.get_stats())
+                    staged = tg.create_task(self.tdarr.get_staged())
+                    libraries = tg.create_task(self.tdarr.get_libraries())
+                    global_settings = tg.create_task(self.tdarr.get_global_settings())
+
                 data = {
-                    "server": await self._hass.async_add_executor_job(self.tdarr.get_status),
-                    "nodes": await self._hass.async_add_executor_job(self.tdarr.get_nodes),
-                    "stats": await self._hass.async_add_executor_job(self.tdarr.get_stats),
-                    "staged": await self._hass.async_add_executor_job(self.tdarr.get_staged),
-                    "libraries": await self._hass.async_add_executor_job(self.tdarr.get_libraries),
-                    "globalsettings": await self._hass.async_add_executor_job(self.tdarr.get_global_settings),
+                    "server": status.result(),
+                    "nodes": nodes.result(),
+                    "stats": stats.result(),
+                    "staged": staged.result(),
+                    "libraries": libraries.result(),
+                    "globalsettings": global_settings.result(),
                 }
 
                 #_LOGGER.debug(self.data)

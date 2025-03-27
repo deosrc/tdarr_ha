@@ -1,6 +1,6 @@
 from dataclasses import dataclass, replace
 import logging
-from typing import Callable
+from typing import Callable, Dict
 
 from homeassistant.components.sensor import (
     SensorEntity,
@@ -33,6 +33,15 @@ class TdarrSensorEntityDescription(SensorEntityDescription):
 
 def get_node_fps(node_data: dict, worker_type: str = "") -> int:
     return sum([worker_data.get("fps", 0) for _, worker_data in node_data.get("workers", {}).items() if worker_data.get("workerType", "").startswith(worker_type)])
+
+def get_node_memory_percent(node_data: dict) -> float:
+    os_resource_stats: Dict[str, str] = node_data.get("resStats", {}).get("os", {})
+    used_gb_raw = os_resource_stats.get("memUsedGB")
+    total_gb_raw = os_resource_stats.get("memTotalGB")
+    if used_gb_raw is None or total_gb_raw is None:
+        return None
+    
+    return (float(used_gb_raw) / float(total_gb_raw)) * 100
 
 SERVER_ENTITY_DESCRIPTIONS = {
     TdarrSensorEntityDescription(
@@ -190,7 +199,7 @@ NODE_ENTITY_DESCRIPTIONS = {
         native_unit_of_measurement="%",
         suggested_display_precision=2,
         state_class=SensorStateClass.MEASUREMENT,
-        value_fn=lambda data: (float(data.get("resStats", {}).get("os", {}).get("memUsedGB")) / float(data.get("resStats", {}).get("os", {}).get("memTotalGB"))) * 100,
+        value_fn=lambda data: get_node_memory_percent(data),
         attributes_fn=lambda data: {
             "Used GB": data.get("resStats", {}).get("os", {}).get("memUsedGB"),
             "Total GB": data.get("resStats", {}).get("os", {}).get("memTotalGB"),

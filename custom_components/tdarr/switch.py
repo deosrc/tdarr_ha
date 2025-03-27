@@ -1,14 +1,14 @@
 from dataclasses import dataclass, replace
 import logging
-from typing import Callable
+from typing import Awaitable, Callable
 
+import aiohttp
 from homeassistant.core import callback
 from homeassistant.components.switch import (
     SwitchEntity,
     SwitchEntityDescription
 )
 from homeassistant.exceptions import HomeAssistantError
-from requests import HTTPError, Response
 
 from . import (
     TdarrServerEntity,
@@ -31,13 +31,13 @@ class TdarrSwitchEntityDescription(SwitchEntityDescription):
 class TdarrServerSwitchEntityDescription(TdarrSwitchEntityDescription): 
     """Details of a Tdarr server switch entity""" 
  
-    update_fn: Callable[[TdarrApiClient, bool], Response]
+    update_fn: Callable[[TdarrApiClient, bool], Awaitable]
 
 @dataclass(frozen=True, kw_only=True) 
 class TdarrNodeSwitchEntityDescription(TdarrSwitchEntityDescription): 
     """Details of a Tdarr node switch entity""" 
  
-    update_fn: Callable[[TdarrApiClient, str, bool], None]
+    update_fn: Callable[[TdarrApiClient, str, bool], Awaitable]
 
 SERVER_ENTITY_DESCRIPTIONS = {
     TdarrServerSwitchEntityDescription(
@@ -101,17 +101,7 @@ class TdarrServerSwitch(TdarrServerEntity, SwitchEntity):
         return await self.async_set_state(False)
 
     async def async_set_state(self, state: bool):
-        def update_action():
-            return self.description.update_fn(self.coordinator.tdarr, state)
-
-        try:
-            response: Response = await self.coordinator.hass.async_add_executor_job(update_action)
-        except HTTPError as e:
-            raise HomeAssistantError(f"Error setting {self.entity_description.key} switch: {e}")
-        
-        if response.status_code >= 400:
-            raise HomeAssistantError(f"Error response received setting {self.entity_description.key} switch: {response.status_code} {response.reason}")
-
+        await self.description.update_fn(self.coordinator.tdarr, state)
         self._attr_is_on = state
         self.async_write_ha_state()
         await self.coordinator.async_request_refresh()
@@ -140,17 +130,7 @@ class TdarrNodeSwitch(TdarrNodeEntity, SwitchEntity):
         return await self.async_set_state(False)
 
     async def async_set_state(self, state: bool):
-        def update_action():
-            return self.description.update_fn(self.coordinator.tdarr, self.node_id, state)
-        
-        try:
-            response: Response = await self.coordinator.hass.async_add_executor_job(update_action)
-        except HTTPError as e:
-            raise HomeAssistantError(f"Error setting {self.entity_description.key} switch: {e}")
-        
-        if response.status_code >= 400:
-            raise HomeAssistantError(f"Error response received setting {self.entity_description.key} switch: {response.status_code} {response.reason}")
-
+        await self.description.update_fn(self.coordinator.tdarr, self.node_id, state)
         self._attr_is_on = state 
         self.async_write_ha_state()
         await self.coordinator.async_request_refresh() 

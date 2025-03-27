@@ -30,8 +30,13 @@ class TdarrApiClient(object):
         _LOGGER.debug("Retrieving nodes from %s", self._id)
         r = self._session.get('get-nodes')
         if r.status_code == 200:
-            result = r.json()
-            return result
+            data = r.json()
+
+            # Node IDs can change when node is restarted, so replace with node name instead.
+            # Fallback to ID if node name is unavailable for some reason.
+            data = { value.get("nodeName", key): value for key, value in data.items()}
+
+            return data
         else:
             return "ERROR"
 

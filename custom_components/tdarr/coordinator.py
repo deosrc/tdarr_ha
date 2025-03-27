@@ -76,15 +76,3 @@ class TdarrDataUpdateCoordinator(DataUpdateCoordinator[dict]):
             raise UpdateFailed(
                 f"Error communicating with Tdarr for {self.serverip}"
             ) from ex
-
-    async def reloadentities(self):
-        _LOGGER.debug("Reloading?")
-        current_entries = self._hass.config_entries.async_entries(DOMAIN)
-        
-
-        reload_tasks = [
-            self._hass.config_entries.async_reload(entry.entry_id)
-            for entry in current_entries
-        ]
-
-        await asyncio.gather(*reload_tasks)

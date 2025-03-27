@@ -162,13 +162,13 @@ class TdarrApiClient(object):
         
         return response
         
-    async def set_node_paused_state(self, node_id, status):
-        _LOGGER.debug("Setting node '%s' paused state to '%s' for %s", node_id, status, self._id)
+    async def set_node_setting(self, node_id, setting_key, value):
+        _LOGGER.debug("Setting node '%s' paused state to '%s' for %s", node_id, value, self._id)
         data = {
             "data": {
                 "nodeID": node_id,
                 "nodeUpdates": {
-                    "nodePaused": status
+                    setting_key: value
                 }
             }
         }
@@ -176,10 +176,10 @@ class TdarrApiClient(object):
         try:
             response = await self._session.post('update-node', json=data)            
         except aiohttp.ClientError as e:
-            raise HomeAssistantError(f"Error writing node '{node_id}' setting 'nodePaused': {e}")
+            raise HomeAssistantError(f"Error writing node '{node_id}' setting '{setting_key}': {e}")
         
         if response.status >= 400:
-            raise HomeAssistantError(f"Error response received writing node '{node_id}' setting 'nodePaused': {response.status} {response.reason}")
+            raise HomeAssistantError(f"Error response received writing node '{node_id}' setting '{setting_key}': {response.status} {response.reason}")
         
         return response
 

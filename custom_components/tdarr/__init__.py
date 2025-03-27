@@ -1,12 +1,13 @@
 """The Tdarr integration."""
 import asyncio
 import logging
-from datetime import timedelta
 
-import async_timeout
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import (
+    HomeAssistant,
+    ServiceCall,
+)
 from homeassistant.const import (
     ATTR_IDENTIFIERS,
     ATTR_NAME,
@@ -18,8 +19,6 @@ from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError
 from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
-    DataUpdateCoordinator,
-    UpdateFailed,
 )
 
 from .coordinator import TdarrDataUpdateCoordinator
@@ -85,15 +84,19 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
-    async def async_refresh_library_service(service_call):
-        await hass.async_add_executor_job(
-            refresh_library, hass, service_call, coordinator
-        )
+    async def async_refresh_library(service_call: ServiceCall):
+        libraryid = service_call.data.get("library", "")
+        mode = service_call.data.get("mode", "scanFindNew")
+        folderpath = service_call.data.get("folderpath", "")
+        status = await coordinator.tdarr.refresh_library(libraryid, mode, folderpath)
+        if "ERROR" in status:
+            _LOGGER.debug(status)
+            raise HomeAssistantError(status["ERROR"])
 
     hass.services.async_register(
         DOMAIN,
         "refresh_library", 
-        async_refresh_library_service
+        async_refresh_library
     )
 
 
@@ -121,15 +124,6 @@ async def options_update_listener(
     ):
         _LOGGER.debug("OPTIONS CHANGE")
         await hass.config_entries.async_reload(entry.entry_id)
-
-def refresh_library(hass, service, coordinator: TdarrDataUpdateCoordinator):
-    libraryid = service.data.get("library", "")
-    mode = service.data.get("mode", "scanFindNew")
-    folderpath = service.data.get("folderpath", "")
-    status = coordinator.tdarr.refresh_library(libraryid, mode, folderpath)
-    if "ERROR" in status:
-        _LOGGER.debug(status)
-        raise HomeAssistantError(status["ERROR"])
 
 class TdarrEntity(CoordinatorEntity[TdarrDataUpdateCoordinator]):
 

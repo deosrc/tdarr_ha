@@ -185,7 +185,7 @@ class TdarrApiClient(object):
 
     async def refresh_library(self, library_name, mode, folder_path):
         _LOGGER.debug("Refreshing library '%s' using mode '%s' for %s", library_name, mode, self._id)
-        stats = self.get_library_settings()
+        stats = await self.get_library_settings()
         libid = None
 
         if mode == "":

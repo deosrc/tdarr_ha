@@ -155,7 +155,7 @@ class TdarrApiClient(object):
         try:
             response = await self._session.post('cruddb', json=data)            
         except aiohttp.ClientError as e:
-            raise HomeAssistantError(f"Error setting {self.entity_description.key} switch: {e}")
+            raise HomeAssistantError(f"Error setting {self.entity_description.key} switch: {e}") from e
         
         if response.status >= 400:
             raise HomeAssistantError(f"Error response received setting {self.entity_description.key} switch: {response.status_code} {response.reason}")
@@ -176,7 +176,7 @@ class TdarrApiClient(object):
         try:
             response = await self._session.post('update-node', json=data)            
         except aiohttp.ClientError as e:
-            raise HomeAssistantError(f"Error setting {self.entity_description.key} switch: {e}")
+            raise HomeAssistantError(f"Error setting {self.entity_description.key} switch: {e}") from e
         
         if response.status >= 400:
             raise HomeAssistantError(f"Error response received setting {self.entity_description.key} switch: {response.status_code} {response.reason}")
@@ -211,7 +211,7 @@ class TdarrApiClient(object):
         try:
             response = await self._session.post('scan-files', json=data)            
         except aiohttp.ClientError as e:
-            raise HomeAssistantError(f"Error setting {self.entity_description.key} switch: {e}")
+            raise HomeAssistantError(f"Error setting {self.entity_description.key} switch: {e}") from e
         
         if response.status >= 400:
             raise HomeAssistantError(f"Error response received setting {self.entity_description.key} switch: {response.status_code} {response.reason}")

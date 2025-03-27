@@ -14,7 +14,7 @@ from .const import (
     UPDATE_INTERVAL_DEFAULT,
     APIKEY
 )
-from .tdarr import TdarrApiClient
+from .api import TdarrApiClient
 
 _LOGGER = logging.getLogger(__name__)
 

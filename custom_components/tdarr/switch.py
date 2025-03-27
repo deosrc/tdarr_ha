@@ -14,8 +14,9 @@ from . import (
     TdarrServerEntity,
     TdarrNodeEntity,
 )
+from .coordinator import TdarrDataUpdateCoordinator
 from .const import DOMAIN, COORDINATOR
-from .tdarr import TdarrApiClient
+from .api import TdarrApiClient
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -85,7 +86,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 class TdarrServerSwitch(TdarrServerEntity, SwitchEntity):
     """A Tdarr server level switch"""
 
-    def __init__(self, coordinator, options, entity_description: TdarrServerSwitchEntityDescription):
+    def __init__(self, coordinator: TdarrDataUpdateCoordinator, options, entity_description: TdarrServerSwitchEntityDescription):
         _LOGGER.info("Creating server level switch %s", entity_description.key)
         super().__init__(coordinator, entity_description)
 
@@ -124,7 +125,7 @@ class TdarrServerSwitch(TdarrServerEntity, SwitchEntity):
 class TdarrNodeSwitch(TdarrNodeEntity, SwitchEntity):
     """A Tdarr node level switch"""
 
-    def __init__(self, coordinator, node_id, options, entity_description: TdarrNodeSwitchEntityDescription):
+    def __init__(self, coordinator: TdarrDataUpdateCoordinator, node_id: str, options, entity_description: TdarrNodeSwitchEntityDescription):
         _LOGGER.info("Creating node %s level switch %s", node_id, entity_description.key)
         super().__init__(coordinator, node_id, entity_description)
 

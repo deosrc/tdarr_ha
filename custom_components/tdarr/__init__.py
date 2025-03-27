@@ -70,8 +70,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     #_LOGGER.debug(coordinator.data)
     tdarr_options_listener = entry.add_update_listener(options_update_listener) 
 
-   
-
     if not coordinator.last_update_success:
         raise ConfigEntryNotReady
 
@@ -79,23 +77,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         COORDINATOR : coordinator,
         "tdarr_options_listener": tdarr_options_listener
     }
-        
-
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
-    async def async_refresh_library(service_call: ServiceCall):
+    async def async_scan_library(service_call: ServiceCall):
         library_name = service_call.data["library"]
         mode = service_call.data["mode"]
         folder_path = service_call.data["folderpath"]
-        await coordinator.tdarr.refresh_library(library_name, mode, folder_path)
+        await coordinator.tdarr.async_scan_library(library_name, mode, folder_path)
 
     hass.services.async_register(
         DOMAIN,
-        "refresh_library", 
-        async_refresh_library
+        "scan_library", 
+        async_scan_library
     )
-
 
     return True
 

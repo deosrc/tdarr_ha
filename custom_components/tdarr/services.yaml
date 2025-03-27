@@ -1,6 +1,6 @@
-refresh_library:
-  name: "Library"
-  description: "Rescan/Refresh Tdarr Library"
+scan_library:
+  name: "Scan Library"
+  description: "Scan a Tdarr Library"
   fields:
     library:
       name: Library

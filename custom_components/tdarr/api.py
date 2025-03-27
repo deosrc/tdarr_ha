@@ -191,8 +191,8 @@ class TdarrApiClient(object):
         
         return response
 
-    async def refresh_library(self, library_name, mode, folder_path):
-        _LOGGER.debug("Refreshing library '%s' using mode '%s' for %s", library_name, mode, self._id)
+    async def async_scan_library(self, library_name, mode, folder_path):
+        _LOGGER.debug("Scanning library '%s' using mode '%s' for %s", library_name, mode, self._id)
         all_library_settings = await self.get_library_settings()
         library_id = None
 
@@ -223,13 +223,3 @@ class TdarrApiClient(object):
         
         _LOGGER.debug(await response.text())
         return
-
-
-
-            
-    
-
-
-    
-
-    

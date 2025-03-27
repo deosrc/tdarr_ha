@@ -115,6 +115,22 @@ SERVER_ENTITY_DESCRIPTIONS = {
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: sum([get_node_fps(node_data) for _, node_data in data.get("nodes", {}).items()]),
     ),
+    TdarrSensorEntityDescription(
+        key="total_healthcheck_frame_rate",
+        translation_key="total_healthcheck_frame_rate",
+        icon="mdi:video",
+        native_unit_of_measurement="fps",
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda data: sum([get_node_fps(node_data, worker_type=WORKER_TYPE_HEALTHCHECK) for _, node_data in data.get("nodes", {}).items()]),
+    ),
+    TdarrSensorEntityDescription(
+        key="total_transcode_frame_rate",
+        translation_key="total_transcode_frame_rate",
+        icon="mdi:video",
+        native_unit_of_measurement="fps",
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda data: sum([get_node_fps(node_data, worker_type=WORKER_TYPE_TRANSCODE) for _, node_data in data.get("nodes", {}).items()]),
+    ),
 }
 
 LIBRARY_ENTITY_DESCRIPTIONS = {

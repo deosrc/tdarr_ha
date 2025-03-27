@@ -62,6 +62,12 @@
             "total_frame_rate": {
                 "name": "Total Frame Rate"
             },
+            "total_healthcheck_frame_rate": {
+                "name": "Total Frame Rate: Health Check"
+            },
+            "total_transcode_frame_rate": {
+                "name": "Total Frame Rate: Transcoding"
+            },
             "library": {
                 "name": "Library: {library_name}"
             },

@@ -171,7 +171,7 @@ class TdarrApiClient(object):
             setting_key: The setting to update for the node.
             state: The paused state to set
         """
-        _LOGGER.debug("Setting node '%s' paused state to '%s' for %s", node_id, value, self._id)
+        _LOGGER.debug("Setting node '%s' %s state to '%s' for %s", node_id, setting_key, value, self._id)
         data = {
             "data": {
                 "nodeID": node_id,

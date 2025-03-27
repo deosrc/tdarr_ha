@@ -40,30 +40,15 @@ class TdarrDataUpdateCoordinator(DataUpdateCoordinator[dict]):
         """Fetch data from Tdarr Server."""
         try:
             async with async_timeout.timeout(30):
-                data = {}
-                data["server"] = await self._hass.async_add_executor_job(
-                    self.tdarr.get_status  # Fetch new status
-                )
+                data = {
+                    "server": await self._hass.async_add_executor_job(self.tdarr.get_status),
+                    "nodes": await self._hass.async_add_executor_job(self.tdarr.get_nodes),
+                    "stats": await self._hass.async_add_executor_job(self.tdarr.get_stats),
+                    "staged": await self._hass.async_add_executor_job(self.tdarr.get_staged),
+                    "libraries": await self._hass.async_add_executor_job(self.tdarr.get_libraries),
+                    "globalsettings": await self._hass.async_add_executor_job(self.tdarr.get_global_settings),
+                }
 
-                data["nodes"] = await self._hass.async_add_executor_job(
-                    self.tdarr.get_nodes
-                )          
-
-                data["stats"] = await self._hass.async_add_executor_job(
-                    self.tdarr.get_stats
-                )
-
-                data["staged"] = await self._hass.async_add_executor_job(
-                    self.tdarr.get_staged
-                )
-
-                data["libraries"] = await self._hass.async_add_executor_job(
-                    self.tdarr.get_libraries
-                )
-
-                data["globalsettings"] = await self._hass.async_add_executor_job(
-                    self.tdarr.get_global_settings
-                )
                 #_LOGGER.debug(self.data)
                 if self.data is not None:
                     #_LOGGER.debug(self.data)

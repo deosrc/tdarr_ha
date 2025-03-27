@@ -136,7 +136,7 @@ class TdarrApiClient(object):
         if r.status == 200:
             return await r.json()
         else:
-            return {"message": r.text, "status_code": r.status_code, "status": "ERROR"}
+            return {"message": r.text, "status_code": r.status, "status": "ERROR"}
         
     async def set_global_setting(self, setting_key, value):
         _LOGGER.debug("Setting global setting '%s' for %s", setting_key, self._id)
@@ -155,10 +155,10 @@ class TdarrApiClient(object):
         try:
             response = await self._session.post('cruddb', json=data)            
         except aiohttp.ClientError as e:
-            raise HomeAssistantError(f"Error setting {self.entity_description.key} switch: {e}")
+            raise HomeAssistantError(f"Error writing Tdarr global setting {setting_key}: {e}")
         
         if response.status >= 400:
-            raise HomeAssistantError(f"Error response received setting {self.entity_description.key} switch: {response.status_code} {response.reason}")
+            raise HomeAssistantError(f"Error response received writing Tdarr global setting {setting_key}: {response.status} {response.reason}")
         
         return response
         
@@ -176,10 +176,10 @@ class TdarrApiClient(object):
         try:
             response = await self._session.post('update-node', json=data)            
         except aiohttp.ClientError as e:
-            raise HomeAssistantError(f"Error setting {self.entity_description.key} switch: {e}")
+            raise HomeAssistantError(f"Error writing node '{node_id}' setting 'nodePaused': {e}")
         
         if response.status >= 400:
-            raise HomeAssistantError(f"Error response received setting {self.entity_description.key} switch: {response.status_code} {response.reason}")
+            raise HomeAssistantError(f"Error response received writing node '{node_id}' setting 'nodePaused': {response.status} {response.reason}")
         
         return response
 
@@ -211,10 +211,10 @@ class TdarrApiClient(object):
         try:
             response = await self._session.post('scan-files', json=data)            
         except aiohttp.ClientError as e:
-            raise HomeAssistantError(f"Error setting {self.entity_description.key} switch: {e}")
+            raise HomeAssistantError(f"Error starting library scan for '{library_name}': {e}")
         
         if response.status >= 400:
-            raise HomeAssistantError(f"Error response received setting {self.entity_description.key} switch: {response.status_code} {response.reason}")
+            raise HomeAssistantError(f"Error response received starting library scan for '{library_name}': {response.status} {response.reason}")
         
         _LOGGER.debug(await response.text())
         return "SUCCESS"

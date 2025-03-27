@@ -288,9 +288,9 @@ class TdarrLibrarySensor(TdarrLibraryEntity, SensorEntity):
 
 class TdarrNodeSensor(TdarrNodeEntity, SensorEntity):
 
-    def __init__(self, coordinator: TdarrDataUpdateCoordinator, node_id: str, options, entity_description: TdarrSensorEntityDescription):
-        _LOGGER.info("Creating node %s level sensor %s", node_id, entity_description.key)
-        super().__init__(coordinator, node_id, entity_description)
+    def __init__(self, coordinator: TdarrDataUpdateCoordinator, node_key: str, options, entity_description: TdarrSensorEntityDescription):
+        _LOGGER.info("Creating node %s level sensor %s", node_key, entity_description.key)
+        super().__init__(coordinator, node_key, entity_description)
 
     @property
     def description(self) -> TdarrSensorEntityDescription:

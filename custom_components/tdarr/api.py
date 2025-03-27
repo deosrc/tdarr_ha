@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from typing import Any
 import aiohttp
 
 from homeassistant.exceptions import HomeAssistantError
@@ -162,7 +163,14 @@ class TdarrApiClient(object):
         
         return response
         
-    async def set_node_setting(self, node_id, setting_key, value):
+    async def set_node_setting(self, node_id: str, setting_key: str, value: Any):
+        """Set the paused state of a node.
+        
+        args:
+            node_id: The Tdarr node ID. NOTE: This may be different from the node key used internally by the integration.
+            setting_key: The setting to update for the node.
+            state: The paused state to set
+        """
         _LOGGER.debug("Setting node '%s' paused state to '%s' for %s", node_id, value, self._id)
         data = {
             "data": {

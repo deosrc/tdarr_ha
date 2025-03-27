@@ -185,23 +185,22 @@ class TdarrApiClient(object):
 
     async def refresh_library(self, library_name, mode, folder_path):
         _LOGGER.debug("Refreshing library '%s' using mode '%s' for %s", library_name, mode, self._id)
-        stats = await self.get_library_settings()
-        libid = None
+        all_library_settings = await self.get_library_settings()
+        library_id = None
 
         if mode == "":
             mode = "scanFindNew"
-        for lib in stats:
+        for lib in all_library_settings:
             if library_name in lib["name"]:
-                libid = lib["_id"]
+                library_id = lib["_id"]
 
-        if libid is None:
-            return {"ERROR": "Library Name not found"}
-
+        if library_id is None:
+            raise HomeAssistantError(f"Library {library_name} not found.")
 
         data = {
             "data": {
                 "scanConfig": {
-                    "dbID" : libid,
+                    "dbID" : library_id,
                     "arrayOrPath": folder_path,
                     "mode": mode
                 }
@@ -217,7 +216,7 @@ class TdarrApiClient(object):
             raise HomeAssistantError(f"Error response received setting {self.entity_description.key} switch: {response.status_code} {response.reason}")
         
         _LOGGER.debug(await response.text())
-        return "SUCCESS"
+        return
 
 
 

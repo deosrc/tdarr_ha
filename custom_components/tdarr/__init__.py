@@ -89,9 +89,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         mode = service_call.data.get("mode", "scanFindNew")
         folderpath = service_call.data.get("folderpath", "")
         status = await coordinator.tdarr.refresh_library(libraryid, mode, folderpath)
-        if "ERROR" in status:
-            _LOGGER.debug(status)
-            raise HomeAssistantError(status["ERROR"])
 
     hass.services.async_register(
         DOMAIN,

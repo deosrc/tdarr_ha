@@ -48,13 +48,21 @@ class TdarrDataUpdateCoordinator(DataUpdateCoordinator[dict]):
         """Fetch data from Tdarr Server."""
         try:
             async with async_timeout.timeout(30):
+                async with asyncio.TaskGroup() as tg:
+                    status = tg.create_task(self.tdarr.get_status())
+                    nodes = tg.create_task(self.tdarr.get_nodes())
+                    stats = tg.create_task(self.tdarr.get_stats())
+                    staged = tg.create_task(self.tdarr.get_staged())
+                    libraries = tg.create_task(self.tdarr.get_libraries())
+                    global_settings = tg.create_task(self.tdarr.get_global_settings())
+
                 data = {
-                    "server": await self.tdarr.get_status(),
-                    "nodes": await self.tdarr.get_nodes(),
-                    "stats": await self.tdarr.get_stats(),
-                    "staged": await self.tdarr.get_staged(),
-                    "libraries": await self.tdarr.get_libraries(),
-                    "globalsettings": await self.tdarr.get_global_settings(),
+                    "server": status.result(),
+                    "nodes": nodes.result(),
+                    "stats": stats.result(),
+                    "staged": staged.result(),
+                    "libraries": libraries.result(),
+                    "globalsettings": global_settings.result(),
                 }
 
                 #_LOGGER.debug(self.data)

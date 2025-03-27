@@ -14,7 +14,12 @@ from . import (
     TdarrLibraryEntity,
     TdarrNodeEntity,
 )
-from .const import DOMAIN, COORDINATOR
+from .const import (
+    DOMAIN,
+    COORDINATOR,
+    WORKER_TYPE_HEALTHCHECK,
+    WORKER_TYPE_TRANSCODE,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -25,8 +30,8 @@ class TdarrSensorEntityDescription(SensorEntityDescription):
     value_fn: Callable[[dict], str | int | float | None]
     attributes_fn: Callable[[dict], dict | None] = None
 
-def get_node_fps(node_data: dict) -> int:
-    return sum([worker_data.get("fps", 0) for _, worker_data in node_data.get("workers", {}).items()])
+def get_node_fps(node_data: dict, worker_type: str = "") -> int:
+    return sum([worker_data.get("fps", 0) for _, worker_data in node_data.get("workers", {}).items() if worker_data.get("workerType", "").startswith(worker_type)])
 
 SERVER_ENTITY_DESCRIPTIONS = {
     TdarrSensorEntityDescription(
@@ -136,6 +141,22 @@ NODE_ENTITY_DESCRIPTIONS = {
         native_unit_of_measurement="fps",
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: get_node_fps(data)
+    ),
+    TdarrSensorEntityDescription(
+        key="healthcheck_frame_rate",
+        translation_key="healthcheck_frame_rate",
+        icon="mdi:video",
+        native_unit_of_measurement="fps",
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda data: get_node_fps(data, worker_type=WORKER_TYPE_HEALTHCHECK)
+    ),
+    TdarrSensorEntityDescription(
+        key="transcode_frame_rate",
+        translation_key="transcode_frame_rate",
+        icon="mdi:video",
+        native_unit_of_measurement="fps",
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda data: get_node_fps(data, worker_type=WORKER_TYPE_TRANSCODE)
     ),
     TdarrSensorEntityDescription(
         key="os_cpu_usage",

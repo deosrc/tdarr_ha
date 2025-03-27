@@ -196,8 +196,6 @@ class TdarrApiClient(object):
         all_library_settings = await self.get_library_settings()
         library_id = None
 
-        if mode == "":
-            mode = "scanFindNew"
         for lib in all_library_settings:
             if library_name in lib["name"]:
                 library_id = lib["_id"]
@@ -210,7 +208,7 @@ class TdarrApiClient(object):
                 "scanConfig": {
                     "dbID" : library_id,
                     "arrayOrPath": folder_path,
-                    "mode": mode
+                    "mode": mode or "scanFindNew"
                 }
             }
         }

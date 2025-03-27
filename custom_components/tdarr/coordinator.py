@@ -2,6 +2,7 @@
 import asyncio
 import logging
 from datetime import timedelta
+from typing import Dict
 
 import async_timeout
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
@@ -65,23 +66,18 @@ class TdarrDataUpdateCoordinator(DataUpdateCoordinator[dict]):
                     "globalsettings": global_settings.result(),
                 }
 
-                #_LOGGER.debug(self.data)
-                if self.data is not None:
-                    #_LOGGER.debug(self.data)
-                    oldnodes = len(self.data["nodes"])
-                    #_LOGGER.debug(len(self.data["nodes"]))
-                else:
-                    oldnodes = len(data["nodes"])
-                #_LOGGER.debug(len(self.data["nodes"])
-                if oldnodes != len(data["nodes"]):
-                    _LOGGER.debug("Node Change Detected config reload required")
-                    # Reload integration to pick up new/changed nodes
-                    current_entries = self._hass.config_entries.async_entries(DOMAIN)
-                
-                    if len(current_entries) > 0:
-                        for entry in current_entries:
-                            _LOGGER.debug("SHOWING ENTRY")
-                            self._hass.config_entries.async_schedule_reload(entry.entry_id)
+                # If data is already available, check if we need to reload to create new node sensors
+                if self.data:
+                    def get_node_keys(node_data: Dict[str, dict]):
+                        return set(node_data.get("nodes", {}).keys())
+                    previous_nodes = get_node_keys(self.data)
+                    current_nodes = get_node_keys(data)
+
+                    # Check for new nodes. Don't need to check for existing nodes disappearing.
+                    new_nodes = current_nodes.difference(previous_nodes)
+                    if new_nodes:
+                        _LOGGER.info("New nodes discovered: %s", new_nodes)
+                        self.hass.config_entries.async_schedule_reload(self.config_entry.entry_id)
 
                 return data
             

@@ -62,7 +62,7 @@ NODE_ENTITY_DESCRIPTIONS = {
         translation_key="node_paused",
         icon="mdi:pause-circle",
         value_fn=lambda data: data.get("nodePaused"),
-        update_fn=lambda server, node_id, state: server.set_node_paused_state(node_id, state),
+        update_fn=lambda server, node_id, state: server.set_node_setting(node_id, "nodePaused", state),
     )
 }
 

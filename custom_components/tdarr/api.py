@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from typing import Any
 import aiohttp
 
 from homeassistant.exceptions import HomeAssistantError
@@ -136,7 +137,7 @@ class TdarrApiClient(object):
         if r.status == 200:
             return await r.json()
         else:
-            return {"message": r.text, "status_code": r.status_code, "status": "ERROR"}
+            return {"message": r.text, "status_code": r.status, "status": "ERROR"}
         
     async def set_global_setting(self, setting_key, value):
         _LOGGER.debug("Setting global setting '%s' for %s", setting_key, self._id)
@@ -155,26 +156,27 @@ class TdarrApiClient(object):
         try:
             response = await self._session.post('cruddb', json=data)            
         except aiohttp.ClientError as e:
-            raise HomeAssistantError(f"Error setting {self.entity_description.key} switch: {e}")
+            raise HomeAssistantError(f"Error writing Tdarr global setting {setting_key}: {e}")
         
         if response.status >= 400:
-            raise HomeAssistantError(f"Error response received setting {self.entity_description.key} switch: {response.status_code} {response.reason}")
+            raise HomeAssistantError(f"Error response received writing Tdarr global setting {setting_key}: {response.status} {response.reason}")
         
         return response
         
-    async def set_node_paused_state(self, node_id: str, state: bool):
+    async def set_node_setting(self, node_id: str, setting_key: str, value: Any):
         """Set the paused state of a node.
         
         args:
             node_id: The Tdarr node ID. NOTE: This may be different from the node key used internally by the integration.
+            setting_key: The setting to update for the node.
             state: The paused state to set
         """
-        _LOGGER.debug("Setting node '%s' paused state to '%s' for %s", node_id, state, self._id)
+        _LOGGER.debug("Setting node '%s' %s state to '%s' for %s", node_id, setting_key, value, self._id)
         data = {
             "data": {
                 "nodeID": node_id,
                 "nodeUpdates": {
-                    "nodePaused": state
+                    setting_key: value
                 }
             }
         }
@@ -182,10 +184,10 @@ class TdarrApiClient(object):
         try:
             response = await self._session.post('update-node', json=data)            
         except aiohttp.ClientError as e:
-            raise HomeAssistantError(f"Error setting {self.entity_description.key} switch: {e}")
+            raise HomeAssistantError(f"Error writing node '{node_id}' setting '{setting_key}': {e}")
         
         if response.status >= 400:
-            raise HomeAssistantError(f"Error response received setting {self.entity_description.key} switch: {response.status_code} {response.reason}")
+            raise HomeAssistantError(f"Error response received writing node '{node_id}' setting '{setting_key}': {response.status} {response.reason}")
         
         return response
 
@@ -217,10 +219,10 @@ class TdarrApiClient(object):
         try:
             response = await self._session.post('scan-files', json=data)            
         except aiohttp.ClientError as e:
-            raise HomeAssistantError(f"Error setting {self.entity_description.key} switch: {e}")
+            raise HomeAssistantError(f"Error starting library scan for '{library_name}': {e}")
         
         if response.status >= 400:
-            raise HomeAssistantError(f"Error response received setting {self.entity_description.key} switch: {response.status_code} {response.reason}")
+            raise HomeAssistantError(f"Error response received starting library scan for '{library_name}': {response.status} {response.reason}")
         
         _LOGGER.debug(await response.text())
         return "SUCCESS"

@@ -6,24 +6,47 @@ Thanks to itchannel for their initial work on this integration. "Buy them a coff
 
 ## Install
 
-Use HACS and add as a custom repo. Once the integration is installed go to your integrations and follow the configuration options below:
+Via HACS, add this repository as a custom repo and download the integration.
 
-- Tdarr Server IP or hostname
-- Tdarr Port (Prefilled to Tdarr default port 8265)
+Once the integration is installed, add via the normal integrations page.
 
-## Currently Supported
+## Features
 
-- Server status
-- Node information
-- Node FPS
-- Library information and Statistics
-- Switches to pause/unpause a node
+- Server Sensors:
+    - Server status\*
+    - Space saved\*
+    - File counts for health check and transcode queue, success/not required and failures
+    - Staged file count
+    - Library file counts\*
+    - Total processing frame rate for health checks, transcodes, and combined
+- Server Controls:
+    - Pause all nodes
+    - Disable schedules
+- Node Sensors:
+    - Status sensor\**
+    - OS CPU Usage
+    - OS Memory Usage (in percent but GB available in attributes)
+    - Processing frame rate for health checks, transcodes, and combined (total for node, not each worker)
+- Node Controls:
+    - Pause node
+- Services:
+    - Refresh Library (scan)
+
+\* Additional data is available in attributes.
+
+\** This sensor will always show "Online", or "Unavailable"/"Unknown".
 
 ## Screenshots
 
-![Switches to control paused state](./screenshots/node_controls.jpg)
+### Server
 
-![Library sensor](./screenshots/library_sensor.jpg)
+![Server controls](./screenshots/server_controls.png)
+
+![Server sensors](./screenshots/server_sensors.png)
+
+# Nodes
+
+![Node entities](./screenshots/nodes.png)
 
 ## Additional Information
 

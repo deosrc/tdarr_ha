@@ -85,10 +85,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     async def async_refresh_library(service_call: ServiceCall):
-        libraryid = service_call.data.get("library", "")
-        mode = service_call.data.get("mode", "scanFindNew")
-        folderpath = service_call.data.get("folderpath", "")
-        status = await coordinator.tdarr.refresh_library(libraryid, mode, folderpath)
+        library_name = service_call.data["library"]
+        mode = service_call.data["mode"]
+        folder_path = service_call.data["folderpath"]
+        await coordinator.tdarr.refresh_library(library_name, mode, folder_path)
 
     hass.services.async_register(
         DOMAIN,

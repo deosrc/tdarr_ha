@@ -46,8 +46,16 @@
                 },
                 "mode": {
                     "name": "Scan Mode",
-                    "description": "Mode to scan (default find new files only)"
+                    "description": "The type of scan to perform. The names here are more explicit than in the Tdarr UI, but they provide the same functionality."
                 }
+            }
+        }
+    },
+    "selector": {
+        "scan_mode": {
+            "options": {
+                "scanFindNew": "Find new files and remove missing files",
+                "scanFresh": "Remove all files and rescan"
             }
         }
     },

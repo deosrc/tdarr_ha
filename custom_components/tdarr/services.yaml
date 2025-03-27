@@ -18,9 +18,12 @@ refresh_library:
         text:
     mode:
       name: Scan Mode
-      description: "Mode to scan (default find new files only)"
+      description: The type of scan to perform. Note that in the Tdarr UI 'Find New' will also remove missing files. It is included in the name here for clarity.
+      required: true
+      default: scanFindNew
       selector:
         select:
+          translation_key: scan_mode
           options:
             - scanFindNew
             - scanFresh

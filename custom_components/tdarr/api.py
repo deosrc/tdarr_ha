@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import aiohttp
 
@@ -38,7 +39,8 @@ class TdarrApiClient(object):
     
     async def get_libraries(self):
         _LOGGER.debug("Retrieving libraries from %s", self._id)
-        libraries = {l["_id"]: { "name": l["name"] } for l in await self.get_library_settings()} 
+        library_settings = await self.get_library_settings()
+        libraries = {l["_id"]: { "name": l["name"] } for l in library_settings}
         libraries.update({ 
             "": { 
                 "name": "All" 
@@ -46,8 +48,12 @@ class TdarrApiClient(object):
         }) 
         _LOGGER.debug("Libraries: %s", libraries) 
  
-        for key, value in libraries.items():
-            value.update(await self.get_pies(key))
+        async def update_library_details(library_id, data: dict):
+            data.update(await self.get_pies(library_id))
+
+        async with asyncio.TaskGroup() as tg:
+            for library_id, data in libraries.items():
+                tg.create_task(update_library_details(library_id, data))
         
         return libraries
 

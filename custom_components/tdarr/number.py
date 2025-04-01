@@ -40,6 +40,33 @@ NODE_ENTITY_DESCRIPTIONS = {
         mode=NumberMode.BOX,
         value_fn=lambda data: data.get("workerLimits", {}).get("healthcheckcpu")
     ),
+    TdarrNumberEntityDescription(
+        key="worker_limit_healthcheck_gpu",
+        translation_key="worker_limit_healthcheck_gpu",
+        icon="mdi:heart-pulse",
+        min_value=0,
+        step=1,
+        mode=NumberMode.BOX,
+        value_fn=lambda data: data.get("workerLimits", {}).get("healthcheckgpu")
+    ),
+    TdarrNumberEntityDescription(
+        key="worker_limit_transcode_cpu",
+        translation_key="worker_limit_transcode_cpu",
+        icon="mdi:video",
+        min_value=0,
+        step=1,
+        mode=NumberMode.BOX,
+        value_fn=lambda data: data.get("workerLimits", {}).get("transcodecpu")
+    ),
+    TdarrNumberEntityDescription(
+        key="worker_limit_transcode_gpu",
+        translation_key="worker_limit_transcode_gpu",
+        icon="mdi:video",
+        min_value=0,
+        step=1,
+        mode=NumberMode.BOX,
+        value_fn=lambda data: data.get("workerLimits", {}).get("transcodegpu")
+    ),
 }
 
 async def async_setup_entry(hass, config_entry, async_add_entities):

@@ -36,7 +36,11 @@ from .api import TdarrApiClient
 
 CONFIG_SCHEMA = vol.Schema({DOMAIN: vol.Schema({})}, extra=vol.ALLOW_EXTRA)
 
-PLATFORMS = ["sensor", "switch"]
+PLATFORMS = [
+    "binary_sensor",
+    "sensor",
+    "switch",
+]
 
 _LOGGER = logging.getLogger(__name__)
 

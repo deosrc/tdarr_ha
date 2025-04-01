@@ -36,6 +36,11 @@
                 "name": "Status"
             }
         },
+        "number": {
+            "worker_limit_healthcheck_cpu": {
+                "name": "Worker Limit: Health Check CPU"
+            }
+        },
         "sensor": {
             "space_saved": {
                 "name": "Space Saved"

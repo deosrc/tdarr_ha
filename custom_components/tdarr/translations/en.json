@@ -50,8 +50,8 @@
     "selector": {
         "scan_mode": {
             "options": {
-                "scanFindNew": "Find new files and remove missing files",
-                "scanFresh": "Remove all files and rescan"
+                "find_new": "Find new files and remove missing files",
+                "fresh": "Remove all files and rescan"
             }
         }
     },

@@ -6,6 +6,7 @@ import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import (
     HomeAssistant,
+    HomeAssistantError,
     ServiceCall,
 )
 from homeassistant.const import (
@@ -15,7 +16,7 @@ from homeassistant.const import (
     ATTR_SW_VERSION,
     ATTR_VIA_DEVICE,
 )
-from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError
+from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
@@ -32,7 +33,6 @@ from .const import (
     COORDINATOR,
     APIKEY
 )
-from .api import TdarrApiClient
 
 CONFIG_SCHEMA = vol.Schema({DOMAIN: vol.Schema({})}, extra=vol.ALLOW_EXTRA)
 
@@ -41,6 +41,11 @@ PLATFORMS = [
     "sensor",
     "switch",
 ]
+
+SCAN_LIBRARY_MODE = {
+    "find_new": "scanFindNew",
+    "fresh": "scanFresh",
+}
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -86,7 +91,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     async def async_scan_library(service_call: ServiceCall):
         library_name = service_call.data["library"]
-        mode = service_call.data["mode"]
+
+        mode = SCAN_LIBRARY_MODE.get(service_call.data["mode"])
+        if not mode:
+            raise HomeAssistantError(f"Invalid scan mode '{service_call.data["mode"]}'")
+
         await coordinator.tdarr.async_scan_library(library_name, mode)
 
     hass.services.async_register(

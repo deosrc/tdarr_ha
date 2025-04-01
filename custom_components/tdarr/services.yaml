@@ -18,6 +18,6 @@ scan_library:
         select:
           translation_key: scan_mode
           options:
-            - scanFindNew
-            - scanFresh
+            - find_new
+            - fresh
 

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 import logging
-from typing import Callable
+from typing import Awaitable, Callable, Generic, TypeVar
 
 from homeassistant.components.number import (
     NumberEntity,
@@ -12,6 +12,7 @@ from . import (
     TdarrServerEntity,
     TdarrNodeEntity,
 )
+from .api import TdarrApiClient
 from .coordinator import TdarrDataUpdateCoordinator
 from .const import (
     DOMAIN,
@@ -20,52 +21,59 @@ from .const import (
 
 _LOGGER = logging.getLogger(__name__)
 
+TEntity = TypeVar('TEntity')
+
 @dataclass(frozen=True, kw_only=True) 
-class TdarrNumberEntityDescription(NumberEntityDescription): 
+class TdarrNumberEntityDescription(NumberEntityDescription, Generic[TEntity]): 
     """Details of a Tdarr sensor entity""" 
  
     value_fn: Callable[[dict], int | None]
+    update_fn: Callable[[TdarrApiClient, TEntity, float], Awaitable]
     attributes_fn: Callable[[dict], dict | None] = None
 
 SERVER_ENTITY_DESCRIPTIONS = {
 }
 
 NODE_ENTITY_DESCRIPTIONS = {
-    TdarrNumberEntityDescription(
+    TdarrNumberEntityDescription[TdarrNodeEntity](
         key="worker_limit_healthcheck_cpu",
         translation_key="worker_limit_healthcheck_cpu",
         icon="mdi:heart-pulse",
         min_value=0,
         step=1,
         mode=NumberMode.BOX,
-        value_fn=lambda data: data.get("workerLimits", {}).get("healthcheckcpu")
+        value_fn=lambda data: data.get("workerLimits", {}).get("healthcheckcpu"),
+        update_fn=lambda api, entity, value: api.set_node_worker_limit(entity.node_key, "healthcheckcpu", int(value))
     ),
-    TdarrNumberEntityDescription(
+    TdarrNumberEntityDescription[TdarrNodeEntity](
         key="worker_limit_healthcheck_gpu",
         translation_key="worker_limit_healthcheck_gpu",
         icon="mdi:heart-pulse",
         min_value=0,
         step=1,
         mode=NumberMode.BOX,
-        value_fn=lambda data: data.get("workerLimits", {}).get("healthcheckgpu")
+        value_fn=lambda data: data.get("workerLimits", {}).get("healthcheckgpu"),
+        update_fn=lambda api, entity, value: api.set_node_worker_limit(entity.node_key, "healthcheckgpu", int(value))
     ),
-    TdarrNumberEntityDescription(
+    TdarrNumberEntityDescription[TdarrNodeEntity](
         key="worker_limit_transcode_cpu",
         translation_key="worker_limit_transcode_cpu",
         icon="mdi:video",
         min_value=0,
         step=1,
         mode=NumberMode.BOX,
-        value_fn=lambda data: data.get("workerLimits", {}).get("transcodecpu")
+        value_fn=lambda data: data.get("workerLimits", {}).get("transcodecpu"),
+        update_fn=lambda api, entity, value: api.set_node_worker_limit(entity.node_key, "transcodecpu", int(value))
     ),
-    TdarrNumberEntityDescription(
+    TdarrNumberEntityDescription[TdarrNodeEntity](
         key="worker_limit_transcode_gpu",
         translation_key="worker_limit_transcode_gpu",
         icon="mdi:video",
         min_value=0,
         step=1,
         mode=NumberMode.BOX,
-        value_fn=lambda data: data.get("workerLimits", {}).get("transcodegpu")
+        value_fn=lambda data: data.get("workerLimits", {}).get("transcodegpu"),
+        update_fn=lambda api, entity, value: api.set_node_worker_limit(entity.node_key, "transcodegpu", int(value))
     ),
 }
 
@@ -105,6 +113,9 @@ class TdarrServerNumberEntity(TdarrServerEntity, NumberEntity):
         if self.description.attributes_fn:
             return self.description.attributes_fn(self.data)
         
+    async def async_set_native_value(self, value):
+        await self.description.update_fn(self.coordinator.tdarr, self, int(value))
+        
 
 class TdarrNodeNumberEntity(TdarrNodeEntity, NumberEntity):
 
@@ -126,3 +137,6 @@ class TdarrNodeNumberEntity(TdarrNodeEntity, NumberEntity):
             return self.description.attributes_fn(self.data)
         else:
             return self.data
+        
+    async def async_set_native_value(self, value):
+        await self.description.update_fn(self.coordinator.tdarr, self, int(value))

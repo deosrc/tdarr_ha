@@ -5,6 +5,8 @@ import aiohttp
 
 from homeassistant.exceptions import HomeAssistantError
 
+from .const import WORKER_TYPES
+
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -190,6 +192,57 @@ class TdarrApiClient(object):
             raise HomeAssistantError(f"Error response received writing node '{node_id}' setting '{setting_key}': {response.status} {response.reason}")
         
         return response
+    
+    async def set_node_worker_limit(self, node_key: str,  worker_type: str, value: int):
+        """Set the paused state of a node.
+        
+        args:
+            node_key: The internal ID of the node for the integration. This is usually the node name.
+            worker_type: The type of worker to set.
+            value: The number to set the worker limit to.
+        """
+        if value < 0:
+            raise HomeAssistantError("Worker limit cannot be negative.")
+
+        if worker_type not in WORKER_TYPES:
+            raise HomeAssistantError(f"Worker type must be one of {', '.join(WORKER_TYPES)}")
+
+        _LOGGER.info("Setting %s worker limit for '%s' to %d", worker_type, node_key, value)
+        
+        current_node_data = (await self.get_nodes()).get(node_key, {})
+        if not current_node_data:
+            raise HomeAssistantError("Could not determine current worker limit. Node looks to be offline.")
+        
+        current_worker_limit = current_node_data.get('workerLimits', {}).get(worker_type)
+        if current_worker_limit is None:
+            raise HomeAssistantError("Could not determine current worker limit.")
+
+        process = ''
+        if current_worker_limit < value:
+            process = 'increase'
+        elif current_worker_limit > value:
+            process = 'decrease'
+        else:
+            _LOGGER.warning("Worker %s limit for '%s' is already at %s", worker_type, node_key, value)
+            return
+
+        difference = abs(current_worker_limit - value)
+        _LOGGER.debug("Stepping %s worker limit for %s by %d %s", worker_type, node_key, difference, process)
+
+        data = {
+            'data': {
+                'nodeID': current_node_data['_id'],
+                'process': process,
+                'workerType': worker_type
+            }
+        }
+        try:
+            for i in range(difference):
+                _LOGGER.debug("Step %d...", (i + 1))
+                await self._session.post('alter-worker-limit', json=data)
+            _LOGGER.info("Worker limit updated.")
+        except Exception as e:
+            raise HomeAssistantError("Error while updating worker limit. Potentially only partially updated.") from e
 
     async def refresh_library(self, library_name, mode, folder_path):
         _LOGGER.debug("Refreshing library '%s' using mode '%s' for %s", library_name, mode, self._id)

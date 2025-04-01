@@ -87,8 +87,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     async def async_scan_library(service_call: ServiceCall):
         library_name = service_call.data["library"]
         mode = service_call.data["mode"]
-        folder_path = service_call.data["folderpath"]
-        await coordinator.tdarr.async_scan_library(library_name, mode, folder_path)
+        await coordinator.tdarr.async_scan_library(library_name, mode)
 
     hass.services.async_register(
         DOMAIN,

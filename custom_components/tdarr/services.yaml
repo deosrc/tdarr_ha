@@ -9,13 +9,6 @@ scan_library:
       example: "Movies"
       selector:
         text:
-    folderpath:
-      name: Folder Path
-      description: "Library Folder path e.g. /Movies (Have to include this for now)"
-      example: "/Movies"
-      required: true
-      selector:
-        text:
     mode:
       name: Scan Mode
       description: The type of scan to perform. Note that in the Tdarr UI 'Find New' will also remove missing files. It is included in the name here for clarity.

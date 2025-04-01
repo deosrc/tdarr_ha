@@ -40,10 +40,6 @@
                     "name": "Library",
                     "description": "Library Name to refresh"
                 },
-                "folderpath": {
-                    "name": "Folder Path",
-                    "description": "Library Folder path e.g. /Movies (Have to include this for now)"
-                },
                 "mode": {
                     "name": "Scan Mode",
                     "description": "The type of scan to perform. The names here are more explicit than in the Tdarr UI, but they provide the same functionality."

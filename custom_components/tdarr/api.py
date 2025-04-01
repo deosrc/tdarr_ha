@@ -191,27 +191,22 @@ class TdarrApiClient(object):
         
         return response
 
-    async def refresh_library(self, library_name, mode, folder_path):
-        _LOGGER.debug("Refreshing library '%s' using mode '%s' for %s", library_name, mode, self._id)
-        stats = await self.get_library_settings()
-        libid = None
+    async def async_scan_library(self, library_name, mode):
+        _LOGGER.debug("Scanning library '%s' using mode '%s' for %s", library_name, mode, self._id)
+        all_library_settings = await self.get_library_settings()
+        matching_library_settings = [x for x in all_library_settings if x.get("name") == library_name]
 
-        if mode == "":
-            mode = "scanFindNew"
-        for lib in stats:
-            if library_name in lib["name"]:
-                libid = lib["_id"]
-
-        if libid is None:
-            return {"ERROR": "Library Name not found"}
-
+        if not matching_library_settings:
+            raise HomeAssistantError(f"Library '{library_name}' not found.")
+        elif len(matching_library_settings) > 1:
+            raise HomeAssistantError(f"Multiple libraries found matching name '{library_name}'.")
 
         data = {
             "data": {
                 "scanConfig": {
-                    "dbID" : libid,
-                    "arrayOrPath": folder_path,
-                    "mode": mode
+                    "dbID" : matching_library_settings[0]["_id"],
+                    "arrayOrPath": matching_library_settings[0]["folder"],
+                    "mode": mode or "scanFindNew"
                 }
             }
         }
@@ -219,20 +214,10 @@ class TdarrApiClient(object):
         try:
             response = await self._session.post('scan-files', json=data)            
         except aiohttp.ClientError as e:
-            raise HomeAssistantError(f"Error starting library scan for '{library_name}': {e}")
+            raise HomeAssistantError(f"Error starting library scan for '{library_name}': {e}") from e
         
         if response.status >= 400:
             raise HomeAssistantError(f"Error response received starting library scan for '{library_name}': {response.status} {response.reason}")
         
         _LOGGER.debug(await response.text())
-        return "SUCCESS"
-
-
-
-            
-    
-
-
-    
-
-    
+        return

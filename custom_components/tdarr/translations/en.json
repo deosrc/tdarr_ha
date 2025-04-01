@@ -32,22 +32,26 @@
         }
     },
     "services": {
-        "refresh_library": {
-            "name": "Library",
+        "scan_library": {
+            "name": "Scan Library",
             "description": "Rescan/Refresh Tdarr Library",
             "fields": {
                 "library": {
                     "name": "Library",
                     "description": "Library Name to refresh"
                 },
-                "folderpath": {
-                    "name": "Folder Path",
-                    "description": "Library Folder path e.g. /Movies (Have to include this for now)"
-                },
                 "mode": {
                     "name": "Scan Mode",
-                    "description": "Mode to scan (default find new files only)"
+                    "description": "The type of scan to perform. The names here are more explicit than in the Tdarr UI, but they provide the same functionality."
                 }
+            }
+        }
+    },
+    "selector": {
+        "scan_mode": {
+            "options": {
+                "find_new": "Find new files and remove missing files",
+                "fresh": "Remove all files and rescan"
             }
         }
     },

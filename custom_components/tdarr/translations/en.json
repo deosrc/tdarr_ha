@@ -52,10 +52,12 @@
         }
     },
     "entity": {
-        "sensor": {
+        "binary_sensor": {
             "status": {
                 "name": "Status"
-            },
+            }
+        },
+        "sensor": {
             "space_saved": {
                 "name": "Space Saved"
             },

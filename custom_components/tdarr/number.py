@@ -138,14 +138,15 @@ class TdarrNodeNumberEntity(TdarrNodeEntity, NumberEntity):
         try:
             return self.description.value_fn(self.data)
         except Exception as e:
-            raise ValueError(f"Unable to get value for node '{self.node_id}' {self.entity_description.key} number entity") from e
+            raise ValueError(f"Unable to get value for node '{self.node_key}' {self.entity_description.key} number entity") from e
 
     @property
     def extra_state_attributes(self):
         try:
-            return self.description.attributes_fn(self.data)
+            if self.description.attributes_fn:
+                return self.description.attributes_fn(self.data)
         except Exception as e:
-            raise ValueError(f"Unable to get attributes for node '{self.node_id}' {self.entity_description.key} number entity") from e
+            raise ValueError(f"Unable to get attributes for node '{self.node_key}' {self.entity_description.key} number entity") from e
 
     async def async_set_native_value(self, value):
         await self.description.update_fn(self.coordinator.tdarr, self, int(value))

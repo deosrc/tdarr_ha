@@ -36,6 +36,20 @@
                 "name": "Status"
             }
         },
+        "number": {
+            "worker_limit_healthcheck_cpu": {
+                "name": "Worker Limit: Health Check CPU"
+            },
+            "worker_limit_healthcheck_gpu": {
+                "name": "Worker Limit: Health Check GPU"
+            },
+            "worker_limit_transcode_cpu": {
+                "name": "Worker Limit: Transcode CPU"
+            },
+            "worker_limit_transcode_gpu": {
+                "name": "Worker Limit: Transcode GPU"
+            }
+        },
         "sensor": {
             "space_saved": {
                 "name": "Space Saved"

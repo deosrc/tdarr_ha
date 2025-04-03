@@ -13,7 +13,7 @@ Once the integration is installed, add via the normal integrations page.
 ## Features
 
 - Server Sensors:
-    - Server status\*
+    - Server status
     - Space saved\*
     - File counts for health check and transcode queue, success/not required and failures
     - Staged file count
@@ -29,12 +29,11 @@ Once the integration is installed, add via the normal integrations page.
     - Processing frame rate for health checks, transcodes, and combined (total for node, not each worker)
 - Node Controls:
     - Pause node
+    - Worker limits
 - Services:
-    - Refresh Library (scan)
+    - Scan Library
 
 \* Additional data is available in attributes.
-
-\** This sensor will always show "Online", or "Unavailable"/"Unknown".
 
 ## Screenshots
 
@@ -46,7 +45,9 @@ Once the integration is installed, add via the normal integrations page.
 
 # Nodes
 
-![Node entities](./screenshots/nodes.png)
+![Node controls](./screenshots/node_controls.png)
+
+![Node sensors](./screenshots/node_sensors.png)
 
 ## Additional Information
 

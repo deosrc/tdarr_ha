@@ -155,12 +155,6 @@ LIBRARY_ENTITY_DESCRIPTIONS = {
 
 NODE_ENTITY_DESCRIPTIONS = {
     TdarrSensorEntityDescription(
-        key="status",
-        translation_key="status",
-        icon="mdi:server-network-outline",
-        value_fn=lambda _: "Online",
-    ),
-    TdarrSensorEntityDescription(
         key="frame_rate",
         translation_key="frame_rate",
         icon="mdi:video",
@@ -212,11 +206,11 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
     entry = hass.data[DOMAIN][config_entry.entry_id][COORDINATOR]
     sensors = []
     
-    # Server Status Sensors
+    # Server Sensors
     for description in SERVER_ENTITY_DESCRIPTIONS:
         sensors.append(TdarrServerSensor(entry, config_entry.options, description))
 
-    # Server Library Sensors
+    # Library Sensors
     for library_id, data in entry.data["libraries"].items():
         for description in LIBRARY_ENTITY_DESCRIPTIONS:
             description = replace(
@@ -227,7 +221,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
             )
             sensors.append(TdarrLibrarySensor(entry, library_id, config_entry.options, description))
 
-    # Server Node Sensors
+    # Node Sensors
     for node_id in entry.data["nodes"]:
         for description in NODE_ENTITY_DESCRIPTIONS:
             sensors.append(TdarrNodeSensor(entry, node_id, config_entry.options, description))

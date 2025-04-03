@@ -6,6 +6,7 @@ import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import (
     HomeAssistant,
+    HomeAssistantError,
     ServiceCall,
 )
 from homeassistant.const import (
@@ -15,7 +16,7 @@ from homeassistant.const import (
     ATTR_SW_VERSION,
     ATTR_VIA_DEVICE,
 )
-from homeassistant.exceptions import ConfigEntryNotReady, HomeAssistantError
+from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.entity import EntityDescription
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
@@ -32,11 +33,20 @@ from .const import (
     COORDINATOR,
     APIKEY
 )
-from .api import TdarrApiClient
 
 CONFIG_SCHEMA = vol.Schema({DOMAIN: vol.Schema({})}, extra=vol.ALLOW_EXTRA)
 
-PLATFORMS = ["sensor", "switch"]
+PLATFORMS = [
+    "binary_sensor",
+    "number",
+    "sensor",
+    "switch",
+]
+
+SCAN_LIBRARY_MODE = {
+    "find_new": "scanFindNew",
+    "fresh": "scanFresh",
+}
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -70,8 +80,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     #_LOGGER.debug(coordinator.data)
     tdarr_options_listener = entry.add_update_listener(options_update_listener) 
 
-   
-
     if not coordinator.last_update_success:
         raise ConfigEntryNotReady
 
@@ -79,26 +87,23 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         COORDINATOR : coordinator,
         "tdarr_options_listener": tdarr_options_listener
     }
-        
-
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
-    async def async_refresh_library(service_call: ServiceCall):
-        libraryid = service_call.data.get("library", "")
-        mode = service_call.data.get("mode", "scanFindNew")
-        folderpath = service_call.data.get("folderpath", "")
-        status = await coordinator.tdarr.refresh_library(libraryid, mode, folderpath)
-        if "ERROR" in status:
-            _LOGGER.debug(status)
-            raise HomeAssistantError(status["ERROR"])
+    async def async_scan_library(service_call: ServiceCall):
+        library_name = service_call.data["library"]
+
+        mode = SCAN_LIBRARY_MODE.get(service_call.data["mode"])
+        if not mode:
+            raise HomeAssistantError(f"Invalid scan mode '{service_call.data["mode"]}'")
+
+        await coordinator.tdarr.async_scan_library(library_name, mode)
 
     hass.services.async_register(
         DOMAIN,
-        "refresh_library", 
-        async_refresh_library
+        "scan_library", 
+        async_scan_library
     )
-
 
     return True
 

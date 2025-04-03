@@ -241,12 +241,18 @@ class TdarrServerSensor(TdarrServerEntity, SensorEntity):
 
     @property 
     def native_value(self):
-        return self.description.value_fn(self.data)
+        try:
+            return self.description.value_fn(self.data)
+        except Exception as e:
+            raise ValueError(f"Unable to get value for {self.entity_description.key} sensor") from e
 
     @property
     def extra_state_attributes(self):
-        if self.description.attributes_fn:
-            return self.description.attributes_fn(self.data)
+        try:
+            if self.description.attributes_fn:
+                return self.description.attributes_fn(self.data)
+        except Exception as e:
+            raise ValueError(f"Unable to get attributes for {self.entity_description.key} sensor") from e
 
 
 class TdarrLibrarySensor(TdarrLibraryEntity, SensorEntity):
@@ -261,23 +267,29 @@ class TdarrLibrarySensor(TdarrLibraryEntity, SensorEntity):
 
     @property 
     def native_value(self):
-        return self.description.value_fn(self.data)
+        try:
+            return self.description.value_fn(self.data)
+        except Exception as e:
+            raise ValueError(f"Unable to get value for library '{self.library_id}' {self.entity_description.key} sensor") from e
 
     @property
     def extra_state_attributes(self):
-        if self.description.attributes_fn:
-            return self.description.attributes_fn(self.data)
-        else:
-            video_info = self.data.get("video", {})
-            return {
-                "Total Files": self.data.get("totalFiles"),
-                "Number of Transcodes": self.data.get("totalTranscodeCount"),
-                "Space Saved (GB)": round(self.data.get("sizeDiff"), 0),
-                "Number of Health Checks": self.data.get("totalHealthCheckCount"),
-                "Codecs": {x["name"]: x["value"] for x in video_info.get("codecs", {})},
-                "Containers": {x["name"]: x["value"] for x in video_info.get("containers", {})},
-                "Resolutions": {x["name"]: x["value"] for x in video_info.get("resolutions", {})},
-            }
+        try:
+            if self.description.attributes_fn:
+                return self.description.attributes_fn(self.data)
+            else:
+                video_info = self.data.get("video", {})
+                return {
+                    "Total Files": self.data.get("totalFiles"),
+                    "Number of Transcodes": self.data.get("totalTranscodeCount"),
+                    "Space Saved (GB)": round(self.data.get("sizeDiff"), 0),
+                    "Number of Health Checks": self.data.get("totalHealthCheckCount"),
+                    "Codecs": {x["name"]: x["value"] for x in video_info.get("codecs", {})},
+                    "Containers": {x["name"]: x["value"] for x in video_info.get("containers", {})},
+                    "Resolutions": {x["name"]: x["value"] for x in video_info.get("resolutions", {})},
+                }
+        except Exception as e:
+            raise ValueError(f"Unable to get attributes for library '{self.library_id}' {self.entity_description.key} sensor") from e
         
 
 class TdarrNodeSensor(TdarrNodeEntity, SensorEntity):
@@ -292,11 +304,17 @@ class TdarrNodeSensor(TdarrNodeEntity, SensorEntity):
 
     @property 
     def native_value(self):
-        return self.description.value_fn(self.data)
+        try:
+            return self.description.value_fn(self.data)
+        except Exception as e:
+            raise ValueError(f"Unable to get value for node '{self.node_id}' {self.entity_description.key} sensor") from e
 
     @property
     def extra_state_attributes(self):
-        if self.description.attributes_fn:
-            return self.description.attributes_fn(self.data)
-        else:
-            return self.data
+        try:
+            if self.description.attributes_fn:
+                return self.description.attributes_fn(self.data)
+            else:
+                return self.data
+        except Exception as e:
+            raise ValueError(f"Unable to get attributes for node '{self.node_id}' {self.entity_description.key} sensor") from e

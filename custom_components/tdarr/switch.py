@@ -99,8 +99,11 @@ class TdarrServerSwitch(TdarrServerEntity, SwitchEntity):
     @callback 
     def _handle_coordinator_update(self) -> None: 
         """Handle updated data from the coordinator."""
-        self._attr_is_on = self.description.value_fn(self.data)
-        self.async_write_ha_state()
+        try:
+            self._attr_is_on = self.description.value_fn(self.data)
+            self.async_write_ha_state()
+        except Exception as e:
+            raise ValueError(f"Unable to get value for {self.entity_description.key} switch") from e
 
 class TdarrNodeSwitch(TdarrNodeEntity, SwitchEntity):
     """A Tdarr node level switch"""
@@ -128,6 +131,9 @@ class TdarrNodeSwitch(TdarrNodeEntity, SwitchEntity):
     @callback 
     def _handle_coordinator_update(self) -> None: 
         """Handle updated data from the coordinator."""
-        self._attr_is_on = self.description.value_fn(self.data)
-        self.async_write_ha_state()
+        try:
+            self._attr_is_on = self.description.value_fn(self.data)
+            self.async_write_ha_state()
+        except Exception as e:
+            raise ValueError(f"Unable to get value for node '{self.node_id}' {self.entity_description.key} switch") from e
 

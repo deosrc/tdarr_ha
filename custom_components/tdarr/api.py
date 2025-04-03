@@ -158,7 +158,7 @@ class TdarrApiClient(object):
         try:
             response = await self._session.post('cruddb', json=data)            
         except aiohttp.ClientError as e:
-            raise HomeAssistantError(f"Error writing Tdarr global setting {setting_key}: {e}")
+            raise HomeAssistantError(f"Error writing Tdarr global setting {setting_key}: {e}") from e
         
         if response.status >= 400:
             raise HomeAssistantError(f"Error response received writing Tdarr global setting {setting_key}: {response.status} {response.reason}")
@@ -186,7 +186,7 @@ class TdarrApiClient(object):
         try:
             response = await self._session.post('update-node', json=data)            
         except aiohttp.ClientError as e:
-            raise HomeAssistantError(f"Error writing node '{node_id}' setting '{setting_key}': {e}")
+            raise HomeAssistantError(f"Error writing node '{node_id}' setting '{setting_key}': {e}") from e
         
         if response.status >= 400:
             raise HomeAssistantError(f"Error response received writing node '{node_id}' setting '{setting_key}': {response.status} {response.reason}")

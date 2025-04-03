@@ -69,12 +69,18 @@ class TdarrServerBinarySensor(TdarrServerEntity, BinarySensorEntity):
 
     @property
     def is_on(self):
-        return self.description.value_fn(self.data)
+        try:
+            return self.description.value_fn(self.data)
+        except Exception as e:
+            raise ValueError(f"Unable to get value for {self.entity_description.key} binary sensor") from e
 
     @property
     def extra_state_attributes(self):
-        if self.description.attributes_fn:
-            return self.description.attributes_fn(self.data)
+        try:
+            if self.description.attributes_fn:
+                return self.description.attributes_fn(self.data)
+        except Exception as e:
+            raise ValueError(f"Unable to get attributes for {self.entity_description.key} binary sensor") from e
 
 
 class TdarrNodeBinarySensor(TdarrNodeEntity, BinarySensorEntity):
@@ -89,11 +95,17 @@ class TdarrNodeBinarySensor(TdarrNodeEntity, BinarySensorEntity):
 
     @property
     def is_on(self):
-        return self.description.value_fn(self.data)
+        try:
+            return self.description.value_fn(self.data)
+        except Exception as e:
+            raise ValueError(f"Unable to get value for node '{self.node_id}' {self.entity_description.key} binary sensor") from e
 
     @property
     def extra_state_attributes(self):
-        if self.description.attributes_fn:
-            return self.description.attributes_fn(self.data)
-        else:
-            return self.data
+        try:
+            if self.description.attributes_fn:
+                return self.description.attributes_fn(self.data)
+            else:
+                return self.data
+        except Exception as e:
+            raise ValueError(f"Unable to get attributes for node '{self.node_id}' {self.entity_description.key} binary sensor") from e

@@ -135,5 +135,5 @@ class TdarrNodeSwitch(TdarrNodeEntity, SwitchEntity):
             self._attr_is_on = self.description.value_fn(self.data)
             self.async_write_ha_state()
         except Exception as e:
-            raise ValueError(f"Unable to get value for node '{self.node_id}' {self.entity_description.key} switch") from e
+            raise ValueError(f"Unable to get value for node '{self.node_key}' {self.entity_description.key} switch") from e
 

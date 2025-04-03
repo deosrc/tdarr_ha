@@ -1,0 +1,12 @@
+name: Feature Request
+description: Submit an idea for new functionality for the integration
+title: "[Feature Request]: "
+labels:
+  - enhancement
+body:
+- type: markdown
+  attributes:
+    label: Feature
+    description: A concise description of what you would like the integration to do.
+  validations:
+    required: false

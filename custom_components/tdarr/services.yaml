@@ -20,4 +20,6 @@ scan_library:
           options:
             - find_new
             - fresh
-
+get_workers:
+  name: Get Workers
+  description: Gets the currently active workers for a given node

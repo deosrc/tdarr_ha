@@ -32,6 +32,7 @@ Once the integration is installed, add via the normal integrations page.
     - Worker limits
 - Services:
     - Scan Library
+    - Get Worker Information
 
 \* Additional data is available in attributes.
 

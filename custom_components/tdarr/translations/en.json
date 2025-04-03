@@ -32,6 +32,24 @@
         }
     },
     "services": {
+        "cancel_worker_item": {
+            "name": "Cancel a worker item",
+            "description": "Cancel a running worker item on a specific node",
+            "fields": {
+                "node_name": {
+                    "name": "Node Name",
+                    "description": "The name of the node on which the worker is running"
+                },
+                "worker_id": {
+                    "name": "Worker ID",
+                    "description": "The ID of the worker to cancel."
+                },
+                "reason": {
+                    "name": "Reason",
+                    "description": "The reason for cancelling the worker. Shown in the Tdarr logs. Defaults to \"user\" to match the value when cancelling in Tdarr."
+                }
+            }
+        },
         "scan_library": {
             "name": "Scan Library",
             "description": "Rescan/Refresh Tdarr Library",

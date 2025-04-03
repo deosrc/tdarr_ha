@@ -105,6 +105,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         async_scan_library
     )
 
+    async def async_cancel_worker_item(service_call: ServiceCall):
+        await coordinator.tdarr.async_cancel_worker_item(
+            service_call.data["node_name"],
+            service_call.data["worker_id"],
+            service_call.data.get("reason"))
+
+    hass.services.async_register(
+        DOMAIN,
+        "cancel_worker_item", 
+        async_cancel_worker_item
+    )
+
     return True
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):

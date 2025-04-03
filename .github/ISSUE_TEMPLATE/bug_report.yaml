@@ -1,0 +1,45 @@
+name: Bug Report
+description: Report an problem with the integration.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+- type: textarea
+  attributes:
+    label: Current Behavior
+    description: A concise description of what you're experiencing.
+  validations:
+    required: false
+- type: textarea
+  attributes:
+    label: Expected Behavior
+    description: A concise description of what you expected to happen.
+  validations:
+    required: false
+- type: textarea
+  attributes:
+    label: Steps To Reproduce
+    description: Steps to reproduce the behavior.
+    placeholder: |
+      1. In this environment...
+      1. With this config...
+      1. Run '...'
+      1. See error...
+  validations:
+    required: false
+- type: input
+  id: integration_version
+  attributes:
+    label: Integration Version
+    description: What version of this integration are you using? You can find this in HACS, or on the integration page.
+    placeholder: e.g. 1.23
+  validations:
+    required: true
+- type: input
+  id: tdarr_version
+  attributes:
+    label: Tdarr Version
+    description: What version of Tdarr are you connecting to? This is visible in the top right of the Tdarr UI, or on the server device page in Home Assistant.
+    placeholder: e.g. 2.36.01
+  validations:
+    required: true

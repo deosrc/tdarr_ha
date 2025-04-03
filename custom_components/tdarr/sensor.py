@@ -307,7 +307,7 @@ class TdarrNodeSensor(TdarrNodeEntity, SensorEntity):
         try:
             return self.description.value_fn(self.data)
         except Exception as e:
-            raise ValueError(f"Unable to get value for node '{self.node_id}' {self.entity_description.key} sensor") from e
+            raise ValueError(f"Unable to get value for node '{self.node_key}' {self.entity_description.key} sensor") from e
 
     @property
     def extra_state_attributes(self):
@@ -317,4 +317,4 @@ class TdarrNodeSensor(TdarrNodeEntity, SensorEntity):
             else:
                 return self.data
         except Exception as e:
-            raise ValueError(f"Unable to get attributes for node '{self.node_id}' {self.entity_description.key} sensor") from e
+            raise ValueError(f"Unable to get attributes for node '{self.node_key}' {self.entity_description.key} sensor") from e

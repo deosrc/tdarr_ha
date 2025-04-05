@@ -77,7 +77,7 @@ class TdarrServerSwitch(TdarrServerEntity, SwitchEntity):
     """A Tdarr server level switch"""
 
     def __init__(self, coordinator: TdarrDataUpdateCoordinator, options, entity_description: TdarrSwitchEntityDescription):
-        _LOGGER.info("Creating server level switch %s", entity_description.key)
+        _LOGGER.info("Creating server level %s switch entity", entity_description.key)
         super().__init__(coordinator, entity_description)
 
     @property
@@ -103,13 +103,13 @@ class TdarrServerSwitch(TdarrServerEntity, SwitchEntity):
             self._attr_is_on = self.description.value_fn(self.data)
             self.async_write_ha_state()
         except Exception as e:
-            raise ValueError(f"Unable to get value for {self.entity_description.key} switch") from e
+            raise ValueError(f"Unable to get value for {self.entity_description.key} switch entity") from e
 
 class TdarrNodeSwitch(TdarrNodeEntity, SwitchEntity):
     """A Tdarr node level switch"""
 
     def __init__(self, coordinator: TdarrDataUpdateCoordinator, node_key: str, options, entity_description: TdarrSwitchEntityDescription):
-        _LOGGER.info("Creating node %s level switch %s", node_key, entity_description.key)
+        _LOGGER.info("Creating node %s level %s switch entity", node_key, entity_description.key)
         super().__init__(coordinator, node_key, entity_description)
 
     @property
@@ -135,5 +135,5 @@ class TdarrNodeSwitch(TdarrNodeEntity, SwitchEntity):
             self._attr_is_on = self.description.value_fn(self.data)
             self.async_write_ha_state()
         except Exception as e:
-            raise ValueError(f"Unable to get value for node '{self.node_key}' {self.entity_description.key} switch") from e
+            raise ValueError(f"Unable to get value for node '{self.node_key}' {self.entity_description.key} switch entity") from e
 

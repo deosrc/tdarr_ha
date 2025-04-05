@@ -104,7 +104,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 class TdarrServerNumberEntity(TdarrServerEntity, NumberEntity):
 
     def __init__(self, coordinator: TdarrDataUpdateCoordinator, options, entity_description: TdarrNumberEntityDescription):
-        _LOGGER.info("Creating server level number entity %s", entity_description.key)
+        _LOGGER.info("Creating server level %s number entity", entity_description.key)
         super().__init__(coordinator, entity_description)
 
     @property
@@ -133,7 +133,7 @@ class TdarrServerNumberEntity(TdarrServerEntity, NumberEntity):
 class TdarrNodeNumberEntity(TdarrNodeEntity, NumberEntity):
 
     def __init__(self, coordinator: TdarrDataUpdateCoordinator, node_key: str, options, entity_description: TdarrNumberEntityDescription):
-        _LOGGER.info("Creating node %s level number entity %s", node_key, entity_description.key)
+        _LOGGER.info("Creating node %s level %s number entity", node_key, entity_description.key)
         super().__init__(coordinator, node_key, entity_description)
 
     @property

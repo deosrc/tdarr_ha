@@ -64,7 +64,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 class TdarrServerBinarySensor(TdarrServerEntity, BinarySensorEntity):
 
     def __init__(self, coordinator: TdarrDataUpdateCoordinator, options, entity_description: TdarrBinarySensorEntityDescription):
-        _LOGGER.info("Creating server level binary sensor %s", entity_description.key)
+        _LOGGER.info("Creating server level %s binary sensor entity", entity_description.key)
         super().__init__(coordinator, entity_description)
 
     @property
@@ -76,7 +76,7 @@ class TdarrServerBinarySensor(TdarrServerEntity, BinarySensorEntity):
         try:
             return self.description.value_fn(self.data)
         except Exception as e:
-            raise ValueError(f"Unable to get value for {self.entity_description.key} binary sensor") from e
+            raise ValueError(f"Unable to get value for {self.entity_description.key} binary sensor entity") from e
 
     @property
     def extra_state_attributes(self) -> Dict[str, Any] | None:
@@ -84,13 +84,13 @@ class TdarrServerBinarySensor(TdarrServerEntity, BinarySensorEntity):
             if self.description.attributes_fn:
                 return self.description.attributes_fn(self.data)
         except Exception as e:
-            raise ValueError(f"Unable to get attributes for {self.entity_description.key} binary sensor") from e
+            raise ValueError(f"Unable to get attributes for {self.entity_description.key} binary sensor entity") from e
 
 
 class TdarrNodeBinarySensor(TdarrNodeEntity, BinarySensorEntity):
 
     def __init__(self, coordinator: TdarrDataUpdateCoordinator, node_key: str, options, entity_description: TdarrBinarySensorEntityDescription):
-        _LOGGER.info("Creating node %s level binary sensor %s", node_key, entity_description.key)
+        _LOGGER.info("Creating node %s level %s binary sensor entity", node_key, entity_description.key)
         super().__init__(coordinator, node_key, entity_description)
 
     @property
@@ -102,7 +102,7 @@ class TdarrNodeBinarySensor(TdarrNodeEntity, BinarySensorEntity):
         try:
             return self.description.value_fn(self.data)
         except Exception as e:
-            raise ValueError(f"Unable to get value for node '{self.node_key}' {self.entity_description.key} binary sensor") from e
+            raise ValueError(f"Unable to get value for node '{self.node_key}' {self.entity_description.key} binary sensor entity") from e
 
     @property
     def extra_state_attributes(self) -> Dict[str, Any] | None:
@@ -112,4 +112,4 @@ class TdarrNodeBinarySensor(TdarrNodeEntity, BinarySensorEntity):
             else:
                 return self.data
         except Exception as e:
-            raise ValueError(f"Unable to get attributes for node '{self.node_key}' {self.entity_description.key} binary sensor") from e
+            raise ValueError(f"Unable to get attributes for node '{self.node_key}' {self.entity_description.key} binary sensor entity") from e

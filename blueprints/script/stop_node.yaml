@@ -1,0 +1,59 @@
+blueprint:
+  name: Tdarr - Stop Node
+  description: Pauses and cancels all in-progress tasks on the node.
+  domain: script
+  author: deosrc
+
+fields:
+  tdarr_node:
+    selector:
+      device:
+        integration: tdarr
+        model: Node
+    name: Tdarr Node
+    description: The Tdarr node to stop
+    required: true
+  reason:
+    selector:
+      text: null
+    name: Reason
+    description: >-
+      The reason for cancelling the workers. Shown in the Tdarr logs. Defaults
+      to "user" to match the value when cancelling in Tdarr.
+
+sequence:
+  - variables:
+      pause_node_switch: |-
+        {{ states.switch
+          | selectattr('entity_id', 'in', device_entities(tdarr_node))
+          | selectattr('attributes.entity_key', 'eq', 'paused')
+          | map(attribute='entity_id')
+          | first }}
+  - action: switch.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: "{{ pause_node_switch }}"
+  - action: tdarr.get_workers
+    metadata: {}
+    data: {}
+    response_variable: workers
+  - variables:
+      node_name: "{{ state_attr(pause_node_switch, 'node_name') }}"
+      result:
+        cancelled_workers: >-
+          {{ workers.get(state_attr(pause_node_switch, 'integration_node_key'))
+          }}
+  - variables:
+      node_worker_ids: "{{ result.cancelled_workers.keys() | list }}"
+  - repeat:
+      sequence:
+        - action: tdarr.cancel_worker_item
+          metadata: {}
+          data:
+            node_name: "{{ node_name }}"
+            worker_id: "{{ repeat.item }}"
+            reason: "{{ reason }}"
+      for_each: "{{ node_worker_ids }}"
+  - stop: ""
+    response_variable: result

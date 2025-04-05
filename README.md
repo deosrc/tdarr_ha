@@ -14,10 +14,10 @@ Once the integration is installed, add via the normal integrations page.
 
 - Server Sensors:
     - Server status
-    - Space saved\*
+    - Space saved
     - File counts for health check and transcode queue, success/not required and failures
     - Staged file count
-    - Library file counts\*
+    - Library file counts
     - Total processing frame rate for health checks, transcodes, and combined
 - Server Controls:
     - Pause all nodes
@@ -35,7 +35,7 @@ Once the integration is installed, add via the normal integrations page.
     - Cancel Worker Item
     - Get Worker Information
 
-\* Additional data is available in attributes.
+Some additional details are available via attributes.
 
 ## Screenshots
 
@@ -50,6 +50,10 @@ Once the integration is installed, add via the normal integrations page.
 ![Node controls](./screenshots/node_controls.png)
 
 ![Node sensors](./screenshots/node_sensors.png)
+
+## Blueprints
+
+Blueprint scripts and automations are stored in the [Blueprints folder](./blueprints/). These can be imported to Home Assistant via the URL. See the [Home Assistant Documentation](https://www.home-assistant.io/docs/automation/using_blueprints/) for details.
 
 ## Additional Information
 

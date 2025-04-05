@@ -18,6 +18,7 @@ from homeassistant.const import (
     ATTR_IDENTIFIERS,
     ATTR_NAME,
     ATTR_MANUFACTURER,
+    ATTR_MODEL,
     ATTR_SW_VERSION,
     ATTR_VIA_DEVICE,
 )
@@ -187,6 +188,13 @@ class TdarrServerEntity(TdarrEntity):
     def unique_id(self):
         """Return the unique ID of the entity."""
         return f"{self.coordinator.serverip}-server-{self.entity_description.key}"
+    
+    @property
+    def device_info(self):
+        return {
+            **super().device_info,
+            ATTR_MODEL: "Server",
+        }
 
 
 class TdarrLibraryEntity(TdarrEntity):
@@ -252,6 +260,7 @@ class TdarrNodeEntity(TdarrEntity):
         device_info.update({
             ATTR_IDENTIFIERS: {(DOMAIN, self.coordinator.serverip, "node", self.node_key)},
             ATTR_NAME: f"Tdarr Node ({self.data.get("nodeName")})",
+            ATTR_MODEL: "Node",
             ATTR_VIA_DEVICE: server_identifier,
         })
         return device_info

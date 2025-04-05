@@ -215,6 +215,8 @@ class TdarrLibraryEntity(TdarrEntity):
             **super().base_attributes,
             "codecs": {x["name"]: x["value"] for x in video_info.get("codecs", {})},
             "containers": {x["name"]: x["value"] for x in video_info.get("containers", {})},
+            "library_id": self.library_id,
+            "library_name": self.data.get("name"),
             "resolutions": {x["name"]: x["value"] for x in video_info.get("resolutions", {})},
             "space_saved_gb": round(self.data.get("sizeDiff"), 0),
             "total_files": self.data.get("totalFiles"),

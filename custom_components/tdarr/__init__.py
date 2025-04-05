@@ -213,13 +213,13 @@ class TdarrLibraryEntity(TdarrEntity):
         video_info = self.data.get("video", {})
         return {
             **super().base_attributes,
-            "Total Files": self.data.get("totalFiles"),
-            "Number of Transcodes": self.data.get("totalTranscodeCount"),
-            "Space Saved (GB)": round(self.data.get("sizeDiff"), 0),
-            "Number of Health Checks": self.data.get("totalHealthCheckCount"),
-            "Codecs": {x["name"]: x["value"] for x in video_info.get("codecs", {})},
-            "Containers": {x["name"]: x["value"] for x in video_info.get("containers", {})},
-            "Resolutions": {x["name"]: x["value"] for x in video_info.get("resolutions", {})},
+            "codecs": {x["name"]: x["value"] for x in video_info.get("codecs", {})},
+            "containers": {x["name"]: x["value"] for x in video_info.get("containers", {})},
+            "resolutions": {x["name"]: x["value"] for x in video_info.get("resolutions", {})},
+            "space_saved_gb": round(self.data.get("sizeDiff"), 0),
+            "total_files": self.data.get("totalFiles"),
+            "total_health_checks": self.data.get("totalHealthCheckCount"),
+            "total_transcodes": self.data.get("totalTranscodeCount"),
         }
 
 

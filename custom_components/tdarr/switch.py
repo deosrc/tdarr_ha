@@ -1,6 +1,13 @@
 from dataclasses import dataclass
 import logging
-from typing import Awaitable, Callable, Generic, TypeVar
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    Dict,
+    Generic,
+    TypeVar,
+)
 
 from homeassistant.core import callback
 from homeassistant.components.switch import (
@@ -25,7 +32,8 @@ TEntity = TypeVar('TEntity')
 class TdarrSwitchEntityDescription(SwitchEntityDescription, Generic[TEntity]): 
     """Details of a Tdarr switch entity""" 
  
-    value_fn: Callable[[dict], bool | None] 
+    value_fn: Callable[[dict], bool | None]
+    attributes_fn: Callable[[dict], Dict[str, Any] | None] | None = None
     update_fn: Callable[[TdarrApiClient, TEntity, bool], Awaitable]
 
 SERVER_ENTITY_DESCRIPTIONS = {
@@ -83,6 +91,16 @@ class TdarrServerSwitch(TdarrServerEntity, SwitchEntity):
     @property
     def description(self) -> TdarrSwitchEntityDescription:
         return self.entity_description
+    
+    @property
+    def extra_state_attributes(self) -> Dict[str, Any] | None:
+        try:
+            attributes = self.base_attributes
+            if self.description.attributes_fn:
+                attributes = {**attributes, **self.description.attributes_fn(self.data)}
+            return attributes
+        except Exception as e:
+            raise ValueError(f"Unable to get attributes for {self.entity_description.key} switch entity") from e
 
     async def async_turn_on(self, **kwargs):
         return await self.async_set_state(True)
@@ -115,6 +133,16 @@ class TdarrNodeSwitch(TdarrNodeEntity, SwitchEntity):
     @property
     def description(self) -> TdarrSwitchEntityDescription:
         return self.entity_description
+    
+    @property
+    def extra_state_attributes(self) -> Dict[str, Any] | None:
+        try:
+            attributes = self.base_attributes
+            if self.description.attributes_fn:
+                attributes = {**attributes, **self.description.attributes_fn(self.data)}
+            return attributes
+        except Exception as e:
+            raise ValueError(f"Unable to get attributes for node '{self.node_key}' {self.entity_description.key} switch entity") from e
 
     async def async_turn_on(self, **kwargs):
         return await self.async_set_state(True)

@@ -1,6 +1,10 @@
 """The Tdarr integration."""
 import asyncio
 import logging
+from typing import (
+    Any,
+    Dict,
+)
 
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
@@ -171,6 +175,12 @@ class TdarrEntity(CoordinatorEntity[TdarrDataUpdateCoordinator]):
             ATTR_NAME: f"Tdarr Server ({self.coordinator.serverip})",
             ATTR_SW_VERSION: self.coordinator.data.get("server", {}).get("version", "Unknown"),
             ATTR_MANUFACTURER: MANUFACTURER
+        }
+    
+    @property
+    def base_attributes(self) -> Dict[str, Any] | None:
+        return {
+            "server_ip": self.coordinator.serverip,
         }
 
 

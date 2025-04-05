@@ -23,7 +23,7 @@ Once the integration is installed, add via the normal integrations page.
     - Pause all nodes
     - Disable schedules
 - Node Sensors:
-    - Status sensor\**
+    - Status sensor
     - OS CPU Usage
     - OS Memory Usage (in percent but GB available in attributes)
     - Processing frame rate for health checks, transcodes, and combined (total for node, not each worker)
@@ -33,6 +33,7 @@ Once the integration is installed, add via the normal integrations page.
 - Services:
     - Scan Library
     - Cancel Worker Item
+    - Get Worker Information
 
 \* Additional data is available in attributes.
 

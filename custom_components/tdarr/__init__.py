@@ -59,26 +59,13 @@ async def async_setup(hass: HomeAssistant, config: dict):
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Set up Tdarr Server from a config entry."""
-    serverip = entry.data[SERVERIP]
-    serverport= entry.data[SERVERPORT]
-    if APIKEY in entry.data:
-        apikey = entry.data[APIKEY]
-    else:
-        apikey = ""
+    update_interval = entry.options.get(UPDATE_INTERVAL, UPDATE_INTERVAL_DEFAULT)
+    coordinator = TdarrDataUpdateCoordinator(hass, update_interval, entry.data)
 
-    if UPDATE_INTERVAL in entry.options:
-        update_interval = entry.options[UPDATE_INTERVAL]
-    else:
-        update_interval = UPDATE_INTERVAL_DEFAULT
+    # Get initial data so that correct sensors can be created
+    await coordinator.async_refresh()
 
-    #for ar in entry.data:
-        #_LOGGER.debug(ar)
-
-    coordinator = TdarrDataUpdateCoordinator(hass, serverip, serverport, update_interval, apikey)
-
-    await coordinator.async_refresh()  # Get initial data
-       # Registers update listener to update config entry when options are updated.
-    #_LOGGER.debug(coordinator.data)
+    # Registers update listener to update config entry when options are updated.
     tdarr_options_listener = entry.add_update_listener(options_update_listener) 
 
     if not coordinator.last_update_success:
@@ -148,11 +135,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     return unload_ok
 
-async def options_update_listener(
-    hass: HomeAssistant,  entry: ConfigEntry 
-    ):
-        _LOGGER.debug("OPTIONS CHANGE")
-        await hass.config_entries.async_reload(entry.entry_id)
+async def options_update_listener(hass: HomeAssistant,  entry: ConfigEntry):
+    _LOGGER.info("Options updated")
+    await hass.config_entries.async_reload(entry.entry_id)
 
 class TdarrEntity(CoordinatorEntity[TdarrDataUpdateCoordinator]):
 

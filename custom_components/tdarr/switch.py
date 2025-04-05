@@ -34,14 +34,14 @@ SERVER_ENTITY_DESCRIPTIONS = {
         translation_key="pause_all",
         icon="mdi:pause-circle",
         value_fn=lambda data: data.get("globalsettings", {}).get("pauseAllNodes"),
-        update_fn=lambda server, _, state: server.set_global_setting("pauseAll", state),
+        update_fn=lambda server, _, state: server.async_set_global_setting("pauseAll", state),
     ),
     TdarrSwitchEntityDescription[TdarrServerEntity](
         key="ignore_schedules",
         translation_key="ignore_schedules",
         icon="mdi:calendar-remove",
         value_fn=lambda data: data.get("globalsettings", {}).get("ignoreSchedules"),
-        update_fn=lambda server, _, state: server.set_global_setting("ignoreSchedules", state),
+        update_fn=lambda server, _, state: server.async_set_global_setting("ignoreSchedules", state),
     ),
 }
 
@@ -51,7 +51,7 @@ NODE_ENTITY_DESCRIPTIONS = {
         translation_key="node_paused",
         icon="mdi:pause-circle",
         value_fn=lambda data: data.get("nodePaused"),
-        update_fn=lambda server, entity, state: server.set_node_setting(entity.tdarr_node_id, "nodePaused", state),
+        update_fn=lambda server, entity, state: server.async_set_node_setting(entity.tdarr_node_id, "nodePaused", state),
     )
 }
 

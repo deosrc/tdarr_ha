@@ -41,7 +41,7 @@ class TdarrApiClient(object):
         self._id = id
         self._session = session
         
-    async def get_nodes(self):
+    async def async_get_nodes(self):
         _LOGGER.debug("Retrieving nodes from %s", self._id)
         r = await self._session.get('get-nodes')
         if r.status == 200:
@@ -55,7 +55,7 @@ class TdarrApiClient(object):
         else:
             return "ERROR"
 
-    async def get_status(self):
+    async def async_get_status(self):
         _LOGGER.debug("Retrieving status from %s", self._id)
         r = await self._session.get('status')
         if r.status == 200:
@@ -64,9 +64,9 @@ class TdarrApiClient(object):
         else:
             return "ERROR"
     
-    async def get_libraries(self):
+    async def async_get_libraries(self):
         _LOGGER.debug("Retrieving libraries from %s", self._id)
-        library_settings = await self.get_library_settings()
+        library_settings = await self.async_get_library_settings()
         libraries = {l["_id"]: { "name": l["name"] } for l in library_settings}
         libraries.update({ 
             "": { 
@@ -76,7 +76,7 @@ class TdarrApiClient(object):
         _LOGGER.debug("Libraries: %s", libraries) 
  
         async def update_library_details(library_id, data: dict):
-            data.update(await self.get_pies(library_id))
+            data.update(await self.async_get_pies(library_id))
 
         async with asyncio.TaskGroup() as tg:
             for library_id, data in libraries.items():
@@ -84,7 +84,7 @@ class TdarrApiClient(object):
         
         return libraries
 
-    async def get_stats(self):
+    async def async_get_stats(self):
         _LOGGER.debug("Retrieving stats from %s", self._id)
         post = {
             "data": {
@@ -101,7 +101,7 @@ class TdarrApiClient(object):
         else:
             return "ERROR"
     
-    async def get_library_settings(self):
+    async def async_get_library_settings(self):
         _LOGGER.debug("Retrieving library settings from %s", self._id)
         post = {
             "data": {
@@ -116,7 +116,7 @@ class TdarrApiClient(object):
         else:
             return
         
-    async def get_pies(self, library_id=""):
+    async def async_get_pies(self, library_id=""):
         _LOGGER.debug("Retrieving pies for library ID '%s' from %s", library_id, self._id)
         post = {
             "data": {
@@ -130,7 +130,7 @@ class TdarrApiClient(object):
         else:
             return "ERROR"
         
-    async def get_staged(self):
+    async def async_get_staged(self):
         _LOGGER.debug("Retrieving staged files from %s", self._id)
         post = {
             "data": {
@@ -148,7 +148,7 @@ class TdarrApiClient(object):
         else:
             return "ERROR"
         
-    async def get_global_settings(self):  
+    async def async_get_global_settings(self):  
         _LOGGER.debug("Retrieving global settings from %s", self._id)
         post = {
             "data": {
@@ -165,7 +165,7 @@ class TdarrApiClient(object):
         else:
             return {"message": r.text, "status_code": r.status, "status": "ERROR"}
         
-    async def set_global_setting(self, setting_key, value):
+    async def async_set_global_setting(self, setting_key, value):
         _LOGGER.debug("Setting global setting '%s' for %s", setting_key, self._id)
         data = {
             "data":{
@@ -189,7 +189,7 @@ class TdarrApiClient(object):
         
         return response
         
-    async def set_node_setting(self, node_id: str, setting_key: str, value: Any):
+    async def async_set_node_setting(self, node_id: str, setting_key: str, value: Any):
         """Set the paused state of a node.
         
         args:
@@ -217,7 +217,7 @@ class TdarrApiClient(object):
         
         return response
     
-    async def set_node_worker_limit(self, node_key: str,  worker_type: str, value: int):
+    async def async_set_node_worker_limit(self, node_key: str,  worker_type: str, value: int):
         """Set the paused state of a node.
         
         args:
@@ -233,7 +233,7 @@ class TdarrApiClient(object):
 
         _LOGGER.info("Setting %s worker limit for '%s' to %d", worker_type, node_key, value)
         
-        current_node_data = (await self.get_nodes()).get(node_key, {})
+        current_node_data = (await self.async_get_nodes()).get(node_key, {})
         if not current_node_data:
             raise HomeAssistantError("Could not determine current worker limit. Node looks to be offline.")
         
@@ -270,7 +270,7 @@ class TdarrApiClient(object):
 
     async def async_scan_library(self, library_name, mode):
         _LOGGER.debug("Scanning library '%s' using mode '%s' for %s", library_name, mode, self._id)
-        all_library_settings = await self.get_library_settings()
+        all_library_settings = await self.async_get_library_settings()
         matching_library_settings = [x for x in all_library_settings if x.get("name") == library_name]
 
         if not matching_library_settings:

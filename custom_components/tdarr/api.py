@@ -165,6 +165,14 @@ class TdarrApiClient(object):
         else:
             return {"message": r.text, "status_code": r.status, "status": "ERROR"}
         
+    async def get_node_id(self, node_name: str) -> str:
+        all_node_data = await self.get_nodes()
+        node_data = all_node_data.get(node_name)
+        if node_data:
+            return node_data["_id"]
+        else:
+            raise HomeAssistantError(f"Could not determine ID for node '{node_name}'.")
+        
     async def async_set_global_setting(self, setting_key, value):
         _LOGGER.debug("Setting global setting '%s' for %s", setting_key, self._id)
         data = {
@@ -296,5 +304,29 @@ class TdarrApiClient(object):
         if response.status >= 400:
             raise HomeAssistantError(f"Error response received starting library scan for '{library_name}': {response.status} {response.reason}")
         
-        _LOGGER.debug(await response.text())
-        return
+        response_text = await response.text()
+        if response_text.casefold() != "OK".casefold():
+            raise HomeAssistantError(f"Unexpected response starting library scan: {response_text}")
+    
+    async def async_cancel_worker_item(self, node_name: str, worker_id: str, reason: str) -> None:
+        node_id = await self.get_node_id(node_name)
+        data = {
+            "data": {
+                "nodeID": node_id,
+                "workerID": worker_id,
+                "cause": reason or "user"
+            }
+        }
+
+        try:
+            response = await self._session.post("cancel-worker-item", json=data)        
+        except aiohttp.ClientError as e:
+            raise HomeAssistantError(f"Error cancelling worker item: {e}") from e
+        
+        if response.status >= 400:
+            raise HomeAssistantError(f"Error response recieved cancelling worker item: {response.status} {response.reason}")
+        
+        response_text = await response.text()
+        if response_text.casefold() != "OK".casefold():
+            raise HomeAssistantError(f"Unexpected response cancelling worker item: {response_text}")
+

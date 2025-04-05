@@ -258,3 +258,13 @@ class TdarrNodeEntity(TdarrEntity):
             ATTR_VIA_DEVICE: server_identifier,
         })
         return device_info
+    
+    @property
+    def base_attributes(self) -> Dict[str, Any] | None:
+        return {
+            **super().base_attributes,
+            "integration_node_key": self.node_key,
+            "node_id": self.tdarr_node_id,
+            "node_name": self.data.get("nodeName"),
+            "remote_address": self.data.get("remoteAddress"),
+        }

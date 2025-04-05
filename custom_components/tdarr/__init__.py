@@ -207,6 +207,20 @@ class TdarrLibraryEntity(TdarrEntity):
     @property
     def data(self) -> dict:
         return self.coordinator.data.get("libraries", {}).get(self.library_id)
+    
+    @property
+    def base_attributes(self) -> Dict[str, Any] | None:
+        video_info = self.data.get("video", {})
+        return {
+            **super().base_attributes,
+            "Total Files": self.data.get("totalFiles"),
+            "Number of Transcodes": self.data.get("totalTranscodeCount"),
+            "Space Saved (GB)": round(self.data.get("sizeDiff"), 0),
+            "Number of Health Checks": self.data.get("totalHealthCheckCount"),
+            "Codecs": {x["name"]: x["value"] for x in video_info.get("codecs", {})},
+            "Containers": {x["name"]: x["value"] for x in video_info.get("containers", {})},
+            "Resolutions": {x["name"]: x["value"] for x in video_info.get("resolutions", {})},
+        }
 
 
 class TdarrNodeEntity(TdarrEntity):

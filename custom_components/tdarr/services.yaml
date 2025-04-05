@@ -1,3 +1,29 @@
+cancel_worker_item:
+  name: Cancel a worker item
+  description: Cancel a running worker item on a specific node
+  fields:
+    node_name:
+      name: Node Name
+      description: The name of the node on which the worker is running
+      required: true
+      example: abc-laptop
+      selector:
+        text:
+    worker_id:
+      name: Worker ID
+      description: The ID of the worker to cancel.
+      required: true
+      example: only-okapi
+      selector:
+        text:
+    reason:
+      name: Reason
+      description: The reason for cancelling the worker. Shown in the Tdarr logs. Defaults to "user" to match the value when cancelling in Tdarr.
+      selector:
+        text:
+get_workers:
+  name: Get Workers
+  description: Gets the currently active workers for a given node
 scan_library:
   name: "Scan Library"
   description: "Scan a Tdarr Library"
@@ -20,6 +46,3 @@ scan_library:
           options:
             - find_new
             - fresh
-get_workers:
-  name: Get Workers
-  description: Gets the currently active workers for a given node

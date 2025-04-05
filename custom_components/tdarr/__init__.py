@@ -93,6 +93,18 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
         async_scan_library
     )
 
+    async def async_cancel_worker_item(service_call: ServiceCall):
+        await coordinator.tdarr.async_cancel_worker_item(
+            service_call.data["node_name"],
+            service_call.data["worker_id"],
+            service_call.data.get("reason"))
+
+    hass.services.async_register(
+        DOMAIN,
+        "cancel_worker_item", 
+        async_cancel_worker_item
+    )
+
     async def async_get_workers(service_call: ServiceCall):
         node_data = await coordinator.tdarr.get_nodes()
         return { k: v.get("workers", []) for k, v in node_data.items() }

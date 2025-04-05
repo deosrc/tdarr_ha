@@ -199,8 +199,8 @@ NODE_ENTITY_DESCRIPTIONS = {
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: get_node_memory_percent(data),
         attributes_fn=lambda data: {
-            "Used GB": data.get("resStats", {}).get("os", {}).get("memUsedGB"),
-            "Total GB": data.get("resStats", {}).get("os", {}).get("memTotalGB"),
+            "memory_used_gb": data.get("resStats", {}).get("os", {}).get("memUsedGB"),
+            "memory_total_gb": data.get("resStats", {}).get("os", {}).get("memTotalGB"),
         }
     )
 }

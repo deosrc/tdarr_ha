@@ -32,18 +32,7 @@ async def validate_input(hass: core.HomeAssistant, data):
 
     Data has the keys from DATA_SCHEMA with values provided by the user.
     """
-    
-    server_ip = data[SERVERIP]
-    server_port = data[SERVERPORT]
-    api_key = data[APIKEY]
-    session = async_create_clientsession(
-        hass,
-        base_url=f"http://{server_ip}:{server_port}/api/v2/",
-        headers={
-            'Content-Type': 'application/json',
-            'x-api-key': api_key
-        })
-    api_client = TdarrApiClient(f"{server_ip}:{server_port}", session)
+    api_client: TdarrApiClient = TdarrApiClient.from_config(hass, data)
 
     result = await api_client.get_global_settings()
     if result.get("status", "") == "ERROR":

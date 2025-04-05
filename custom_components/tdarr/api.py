@@ -75,12 +75,12 @@ class TdarrApiClient(object):
         }) 
         _LOGGER.debug("Libraries: %s", libraries) 
  
-        async def update_library_details(library_id, data: dict):
+        async def async_update_library_details(library_id, data: dict):
             data.update(await self.async_get_pies(library_id))
 
         async with asyncio.TaskGroup() as tg:
             for library_id, data in libraries.items():
-                tg.create_task(update_library_details(library_id, data))
+                tg.create_task(async_update_library_details(library_id, data))
         
         return libraries
 
@@ -165,7 +165,7 @@ class TdarrApiClient(object):
         else:
             return {"message": r.text, "status_code": r.status, "status": "ERROR"}
         
-    async def get_node_id(self, node_name: str) -> str:
+    async def async_get_node_id(self, node_name: str) -> str:
         all_node_data = await self.get_nodes()
         node_data = all_node_data.get(node_name)
         if node_data:
@@ -309,7 +309,7 @@ class TdarrApiClient(object):
             raise HomeAssistantError(f"Unexpected response starting library scan: {response_text}")
     
     async def async_cancel_worker_item(self, node_name: str, worker_id: str, reason: str) -> None:
-        node_id = await self.get_node_id(node_name)
+        node_id = await self.async_get_node_id(node_name)
         data = {
             "data": {
                 "nodeID": node_id,
@@ -329,4 +329,3 @@ class TdarrApiClient(object):
         response_text = await response.text()
         if response_text.casefold() != "OK".casefold():
             raise HomeAssistantError(f"Unexpected response cancelling worker item: {response_text}")
-

@@ -166,7 +166,7 @@ class TdarrApiClient(object):
             return {"message": r.text, "status_code": r.status, "status": "ERROR"}
         
     async def async_get_node_id(self, node_name: str) -> str:
-        all_node_data = await self.get_nodes()
+        all_node_data = await self.async_get_nodes()
         node_data = all_node_data.get(node_name)
         if node_data:
             return node_data["_id"]

@@ -4,6 +4,7 @@ import logging
 import voluptuous as vol
 from homeassistant import config_entries, core, exceptions
 from homeassistant.core import callback
+from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from requests.exceptions import ConnectionError
 
 from .const import (
@@ -32,9 +33,19 @@ async def validate_input(hass: core.HomeAssistant, data):
     Data has the keys from DATA_SCHEMA with values provided by the user.
     """
     
-    tdarr = TdarrApiClient(data[SERVERIP], data[SERVERPORT], data[APIKEY])
+    server_ip = data[SERVERIP]
+    server_port = data[SERVERPORT]
+    api_key = data[APIKEY]
+    session = async_create_clientsession(
+        hass,
+        base_url=f"http://{server_ip}:{server_port}/api/v2/",
+        headers={
+            'Content-Type': 'application/json',
+            'x-api-key': api_key
+        })
+    api_client = TdarrApiClient(f"{server_ip}:{server_port}", session)
 
-    result = await hass.async_add_executor_job(tdarr.get_global_settings)
+    result = await api_client.get_global_settings()
     if result.get("status", "") == "ERROR":
         if "Invalid API key" in result["message"]:
             raise InvalidAPIKEY

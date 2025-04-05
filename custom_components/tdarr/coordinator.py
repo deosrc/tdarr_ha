@@ -23,19 +23,19 @@ _LOGGER = logging.getLogger(__name__)
 class TdarrDataUpdateCoordinator(DataUpdateCoordinator[dict]):
     """DataUpdateCoordinator to handle fetching new data about the Tdarr Controller."""
 
-    def __init__(self, hass, serverip, serverport, update_interval, api_key):
+    def __init__(self, hass, server_ip, server_port, update_interval, api_key):
         """Initialize the coordinator and set up the Controller object."""
         self._hass = hass
-        self.serverip = serverip
+        self.serverip = server_ip
 
         self._session = async_create_clientsession(
             hass,
-            base_url=f"http://{serverip}:{serverport}/api/v2/",
+            base_url=f"http://{server_ip}:{server_port}/api/v2/",
             headers={
                 'Content-Type': 'application/json',
                 'x-api-key': api_key
             })
-        self.tdarr = TdarrApiClient(f"{serverip}:{serverport}", self._session)
+        self.tdarr = TdarrApiClient(f"{server_ip}:{server_port}", self._session)
         self._available = True
 
         super().__init__(

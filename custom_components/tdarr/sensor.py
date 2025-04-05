@@ -253,8 +253,10 @@ class TdarrServerSensor(TdarrServerEntity, SensorEntity):
     @property
     def extra_state_attributes(self) -> Dict[str, Any] | None:
         try:
+            attributes = self.base_attributes
             if self.description.attributes_fn:
-                return self.description.attributes_fn(self.data)
+                attributes = {**attributes, **self.description.attributes_fn(self.data)}
+            return attributes
         except Exception as e:
             raise ValueError(f"Unable to get attributes for {self.entity_description.key} sensor entity") from e
 
@@ -279,19 +281,10 @@ class TdarrLibrarySensor(TdarrLibraryEntity, SensorEntity):
     @property
     def extra_state_attributes(self) -> Dict[str, Any] | None:
         try:
+            attributes = self.base_attributes
             if self.description.attributes_fn:
-                return self.description.attributes_fn(self.data)
-            else:
-                video_info = self.data.get("video", {})
-                return {
-                    "Total Files": self.data.get("totalFiles"),
-                    "Number of Transcodes": self.data.get("totalTranscodeCount"),
-                    "Space Saved (GB)": round(self.data.get("sizeDiff"), 0),
-                    "Number of Health Checks": self.data.get("totalHealthCheckCount"),
-                    "Codecs": {x["name"]: x["value"] for x in video_info.get("codecs", {})},
-                    "Containers": {x["name"]: x["value"] for x in video_info.get("containers", {})},
-                    "Resolutions": {x["name"]: x["value"] for x in video_info.get("resolutions", {})},
-                }
+                attributes = {**attributes, **self.description.attributes_fn(self.data)}
+            return attributes
         except Exception as e:
             raise ValueError(f"Unable to get attributes for library '{self.library_id}' {self.entity_description.key} sensor entity") from e
         
@@ -316,9 +309,9 @@ class TdarrNodeSensor(TdarrNodeEntity, SensorEntity):
     @property
     def extra_state_attributes(self) -> Dict[str, Any] | None:
         try:
+            attributes = self.base_attributes
             if self.description.attributes_fn:
-                return self.description.attributes_fn(self.data)
-            else:
-                return self.data
+                attributes = {**attributes, **self.description.attributes_fn(self.data)}
+            return attributes
         except Exception as e:
             raise ValueError(f"Unable to get attributes for node '{self.node_key}' {self.entity_description.key} sensor entity") from e

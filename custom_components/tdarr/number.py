@@ -121,8 +121,10 @@ class TdarrServerNumberEntity(TdarrServerEntity, NumberEntity):
     @property
     def extra_state_attributes(self) -> Dict[str, Any] | None:
         try:
+            attributes = self.base_attributes
             if self.description.attributes_fn:
-                return self.description.attributes_fn(self.data)
+                attributes = {**attributes, **self.description.attributes_fn(self.data)}
+            return attributes
         except Exception as e:
             raise ValueError(f"Unable to get attributes for {self.entity_description.key} number entity") from e
 
@@ -150,8 +152,10 @@ class TdarrNodeNumberEntity(TdarrNodeEntity, NumberEntity):
     @property
     def extra_state_attributes(self) -> Dict[str, Any] | None:
         try:
+            attributes = self.base_attributes
             if self.description.attributes_fn:
-                return self.description.attributes_fn(self.data)
+                attributes = {**attributes, **self.description.attributes_fn(self.data)}
+            return attributes
         except Exception as e:
             raise ValueError(f"Unable to get attributes for node '{self.node_key}' {self.entity_description.key} number entity") from e
 

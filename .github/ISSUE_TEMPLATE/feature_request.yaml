@@ -4,4 +4,23 @@ title: "[Feature Request] "
 labels:
   - enhancement
 body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: |-
+        Please try explain the problem you are trying to solve.
+        This is context which is useful in determining the best solution, and helps avoid the XY problem.
+        https://en.wikipedia.org/wiki/XY_problem
+    validations:
+      required: true
+  - type: textarea
+    id: proposed_solution
+    attributes:
+      label: Proposed Solution
+      description: If you already have a solution in mind, please describe it here in as much detail as possible.
   - type: markdown
+    attributes:
+      value: |-
+        <!-- Add any other details which may be relevant -->
+

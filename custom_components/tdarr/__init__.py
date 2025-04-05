@@ -106,7 +106,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     )
 
     async def async_get_workers(service_call: ServiceCall):
-        node_data = await coordinator.tdarr.get_nodes()
+        node_data = await coordinator.tdarr.async_get_nodes()
         return { k: v.get("workers", []) for k, v in node_data.items() }
 
     hass.services.async_register(

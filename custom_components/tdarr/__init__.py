@@ -179,6 +179,7 @@ class TdarrEntity(CoordinatorEntity[TdarrDataUpdateCoordinator]):
     def base_attributes(self) -> Dict[str, Any] | None:
         return {
             "server_ip": self.coordinator.serverip,
+            "entity_key": self.entity_description.key,
         }
 
 

@@ -1,6 +1,13 @@
 from dataclasses import dataclass
 import logging
-from typing import Awaitable, Callable, Generic, TypeVar
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    Dict,
+    Generic,
+    TypeVar,
+)
 
 from homeassistant.components.number import (
     NumberEntity,
@@ -112,7 +119,7 @@ class TdarrServerNumberEntity(TdarrServerEntity, NumberEntity):
             raise ValueError(f"Unable to get value for {self.entity_description.key} number entity") from e
 
     @property
-    def extra_state_attributes(self):
+    def extra_state_attributes(self) -> Dict[str, Any] | None:
         try:
             if self.description.attributes_fn:
                 return self.description.attributes_fn(self.data)
@@ -141,7 +148,7 @@ class TdarrNodeNumberEntity(TdarrNodeEntity, NumberEntity):
             raise ValueError(f"Unable to get value for node '{self.node_key}' {self.entity_description.key} number entity") from e
 
     @property
-    def extra_state_attributes(self):
+    def extra_state_attributes(self) -> Dict[str, Any] | None:
         try:
             if self.description.attributes_fn:
                 return self.description.attributes_fn(self.data)

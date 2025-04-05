@@ -1,6 +1,10 @@
 from dataclasses import dataclass
 import logging
-from typing import Callable
+from typing import (
+    Any,
+    Callable,
+    Dict,
+)
 
 from homeassistant.components.binary_sensor import (
     BinarySensorEntity,
@@ -75,7 +79,7 @@ class TdarrServerBinarySensor(TdarrServerEntity, BinarySensorEntity):
             raise ValueError(f"Unable to get value for {self.entity_description.key} binary sensor") from e
 
     @property
-    def extra_state_attributes(self):
+    def extra_state_attributes(self) -> Dict[str, Any] | None:
         try:
             if self.description.attributes_fn:
                 return self.description.attributes_fn(self.data)
@@ -101,7 +105,7 @@ class TdarrNodeBinarySensor(TdarrNodeEntity, BinarySensorEntity):
             raise ValueError(f"Unable to get value for node '{self.node_key}' {self.entity_description.key} binary sensor") from e
 
     @property
-    def extra_state_attributes(self):
+    def extra_state_attributes(self) -> Dict[str, Any] | None:
         try:
             if self.description.attributes_fn:
                 return self.description.attributes_fn(self.data)

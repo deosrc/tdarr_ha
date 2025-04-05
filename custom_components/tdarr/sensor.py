@@ -1,6 +1,10 @@
 from dataclasses import dataclass, replace
 import logging
-from typing import Callable, Dict
+from typing import (
+    Any,
+    Callable,
+    Dict,
+)
 
 from homeassistant.components.sensor import (
     SensorEntity,
@@ -247,7 +251,7 @@ class TdarrServerSensor(TdarrServerEntity, SensorEntity):
             raise ValueError(f"Unable to get value for {self.entity_description.key} sensor") from e
 
     @property
-    def extra_state_attributes(self):
+    def extra_state_attributes(self) -> Dict[str, Any] | None:
         try:
             if self.description.attributes_fn:
                 return self.description.attributes_fn(self.data)
@@ -273,7 +277,7 @@ class TdarrLibrarySensor(TdarrLibraryEntity, SensorEntity):
             raise ValueError(f"Unable to get value for library '{self.library_id}' {self.entity_description.key} sensor") from e
 
     @property
-    def extra_state_attributes(self):
+    def extra_state_attributes(self) -> Dict[str, Any] | None:
         try:
             if self.description.attributes_fn:
                 return self.description.attributes_fn(self.data)
@@ -310,7 +314,7 @@ class TdarrNodeSensor(TdarrNodeEntity, SensorEntity):
             raise ValueError(f"Unable to get value for node '{self.node_key}' {self.entity_description.key} sensor") from e
 
     @property
-    def extra_state_attributes(self):
+    def extra_state_attributes(self) -> Dict[str, Any] | None:
         try:
             if self.description.attributes_fn:
                 return self.description.attributes_fn(self.data)

@@ -1,6 +1,10 @@
 """The Tdarr integration."""
 import asyncio
 import logging
+from typing import (
+    Any,
+    Dict,
+)
 
 import voluptuous as vol
 from homeassistant.config_entries import ConfigEntry
@@ -169,6 +173,12 @@ class TdarrEntity(CoordinatorEntity[TdarrDataUpdateCoordinator]):
             ATTR_SW_VERSION: self.coordinator.data.get("server", {}).get("version", "Unknown"),
             ATTR_MANUFACTURER: MANUFACTURER
         }
+    
+    @property
+    def base_attributes(self) -> Dict[str, Any] | None:
+        return {
+            "server_ip": self.coordinator.serverip,
+        }
 
 
 class TdarrServerEntity(TdarrEntity):
@@ -194,6 +204,22 @@ class TdarrLibraryEntity(TdarrEntity):
     @property
     def data(self) -> dict:
         return self.coordinator.data.get("libraries", {}).get(self.library_id)
+    
+    @property
+    def base_attributes(self) -> Dict[str, Any] | None:
+        video_info = self.data.get("video", {})
+        return {
+            **super().base_attributes,
+            "codecs": {x["name"]: x["value"] for x in video_info.get("codecs", {})},
+            "containers": {x["name"]: x["value"] for x in video_info.get("containers", {})},
+            "library_id": self.library_id,
+            "library_name": self.data.get("name"),
+            "resolutions": {x["name"]: x["value"] for x in video_info.get("resolutions", {})},
+            "space_saved_gb": round(self.data.get("sizeDiff"), 0),
+            "total_files": self.data.get("totalFiles"),
+            "total_health_checks": self.data.get("totalHealthCheckCount"),
+            "total_transcodes": self.data.get("totalTranscodeCount"),
+        }
 
 
 class TdarrNodeEntity(TdarrEntity):
@@ -229,3 +255,13 @@ class TdarrNodeEntity(TdarrEntity):
             ATTR_VIA_DEVICE: server_identifier,
         })
         return device_info
+    
+    @property
+    def base_attributes(self) -> Dict[str, Any] | None:
+        return {
+            **super().base_attributes,
+            "integration_node_key": self.node_key,
+            "node_id": self.tdarr_node_id,
+            "node_name": self.data.get("nodeName"),
+            "remote_address": self.data.get("remoteAddress"),
+        }

@@ -1,6 +1,10 @@
 from dataclasses import dataclass, replace
 import logging
-from typing import Callable, Dict
+from typing import (
+    Any,
+    Callable,
+    Dict,
+)
 
 from homeassistant.components.sensor import (
     SensorEntity,
@@ -195,8 +199,8 @@ NODE_ENTITY_DESCRIPTIONS = {
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=lambda data: get_node_memory_percent(data),
         attributes_fn=lambda data: {
-            "Used GB": data.get("resStats", {}).get("os", {}).get("memUsedGB"),
-            "Total GB": data.get("resStats", {}).get("os", {}).get("memTotalGB"),
+            "memory_used_gb": data.get("resStats", {}).get("os", {}).get("memUsedGB"),
+            "memory_total_gb": data.get("resStats", {}).get("os", {}).get("memTotalGB"),
         }
     )
 }
@@ -232,7 +236,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 class TdarrServerSensor(TdarrServerEntity, SensorEntity):
 
     def __init__(self, coordinator: TdarrDataUpdateCoordinator, options, entity_description: TdarrSensorEntityDescription):
-        _LOGGER.info("Creating server level sensor %s", entity_description.key)
+        _LOGGER.info("Creating server level %s sensor entity", entity_description.key)
         super().__init__(coordinator, entity_description)
 
     @property
@@ -244,21 +248,23 @@ class TdarrServerSensor(TdarrServerEntity, SensorEntity):
         try:
             return self.description.value_fn(self.data)
         except Exception as e:
-            raise ValueError(f"Unable to get value for {self.entity_description.key} sensor") from e
+            raise ValueError(f"Unable to get value for {self.entity_description.key} sensor entity") from e
 
     @property
-    def extra_state_attributes(self):
+    def extra_state_attributes(self) -> Dict[str, Any] | None:
         try:
+            attributes = self.base_attributes
             if self.description.attributes_fn:
-                return self.description.attributes_fn(self.data)
+                attributes = {**attributes, **self.description.attributes_fn(self.data)}
+            return attributes
         except Exception as e:
-            raise ValueError(f"Unable to get attributes for {self.entity_description.key} sensor") from e
+            raise ValueError(f"Unable to get attributes for {self.entity_description.key} sensor entity") from e
 
 
 class TdarrLibrarySensor(TdarrLibraryEntity, SensorEntity):
 
     def __init__(self, coordinator: TdarrDataUpdateCoordinator, library_id: str, options, entity_description: TdarrSensorEntityDescription):
-        _LOGGER.info("Creating library %s level sensor %s", library_id, entity_description.key)
+        _LOGGER.info("Creating library %s level %s sensor entity", library_id, entity_description.key)
         super().__init__(coordinator, library_id, entity_description)
 
     @property
@@ -270,32 +276,23 @@ class TdarrLibrarySensor(TdarrLibraryEntity, SensorEntity):
         try:
             return self.description.value_fn(self.data)
         except Exception as e:
-            raise ValueError(f"Unable to get value for library '{self.library_id}' {self.entity_description.key} sensor") from e
+            raise ValueError(f"Unable to get value for library '{self.library_id}' {self.entity_description.key} sensor entity") from e
 
     @property
-    def extra_state_attributes(self):
+    def extra_state_attributes(self) -> Dict[str, Any] | None:
         try:
+            attributes = self.base_attributes
             if self.description.attributes_fn:
-                return self.description.attributes_fn(self.data)
-            else:
-                video_info = self.data.get("video", {})
-                return {
-                    "Total Files": self.data.get("totalFiles"),
-                    "Number of Transcodes": self.data.get("totalTranscodeCount"),
-                    "Space Saved (GB)": round(self.data.get("sizeDiff"), 0),
-                    "Number of Health Checks": self.data.get("totalHealthCheckCount"),
-                    "Codecs": {x["name"]: x["value"] for x in video_info.get("codecs", {})},
-                    "Containers": {x["name"]: x["value"] for x in video_info.get("containers", {})},
-                    "Resolutions": {x["name"]: x["value"] for x in video_info.get("resolutions", {})},
-                }
+                attributes = {**attributes, **self.description.attributes_fn(self.data)}
+            return attributes
         except Exception as e:
-            raise ValueError(f"Unable to get attributes for library '{self.library_id}' {self.entity_description.key} sensor") from e
+            raise ValueError(f"Unable to get attributes for library '{self.library_id}' {self.entity_description.key} sensor entity") from e
         
 
 class TdarrNodeSensor(TdarrNodeEntity, SensorEntity):
 
     def __init__(self, coordinator: TdarrDataUpdateCoordinator, node_key: str, options, entity_description: TdarrSensorEntityDescription):
-        _LOGGER.info("Creating node %s level sensor %s", node_key, entity_description.key)
+        _LOGGER.info("Creating node %s level %s sensor entity", node_key, entity_description.key)
         super().__init__(coordinator, node_key, entity_description)
 
     @property
@@ -307,14 +304,14 @@ class TdarrNodeSensor(TdarrNodeEntity, SensorEntity):
         try:
             return self.description.value_fn(self.data)
         except Exception as e:
-            raise ValueError(f"Unable to get value for node '{self.node_key}' {self.entity_description.key} sensor") from e
+            raise ValueError(f"Unable to get value for node '{self.node_key}' {self.entity_description.key} sensor entity") from e
 
     @property
-    def extra_state_attributes(self):
+    def extra_state_attributes(self) -> Dict[str, Any] | None:
         try:
+            attributes = self.base_attributes
             if self.description.attributes_fn:
-                return self.description.attributes_fn(self.data)
-            else:
-                return self.data
+                attributes = {**attributes, **self.description.attributes_fn(self.data)}
+            return attributes
         except Exception as e:
-            raise ValueError(f"Unable to get attributes for node '{self.node_key}' {self.entity_description.key} sensor") from e
+            raise ValueError(f"Unable to get attributes for node '{self.node_key}' {self.entity_description.key} sensor entity") from e

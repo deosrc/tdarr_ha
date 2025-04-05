@@ -32,6 +32,10 @@
         }
     },
     "services": {
+        "get_workers": {
+            "name": "Get Workers",
+            "description": "Gets the currently active workers for a given node"
+        },
         "scan_library": {
             "name": "Scan Library",
             "description": "Rescan/Refresh Tdarr Library",

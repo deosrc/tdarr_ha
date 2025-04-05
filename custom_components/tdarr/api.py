@@ -1,17 +1,41 @@
 import asyncio
 import logging
-from typing import Any
+from typing import (
+    Any,
+    Dict,
+)
 import aiohttp
 
+from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers.aiohttp_client import async_create_clientsession
 
-from .const import WORKER_TYPES
+from .const import (
+    APIKEY,
+    SERVERIP,
+    SERVERPORT,
+    WORKER_TYPES,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
 
 class TdarrApiClient(object):
     """API Client for interacting with a Tdarr server"""
+
+    def from_config(hass: HomeAssistant, config: Dict[str, Any]):
+        server_ip = config[SERVERIP]
+        server_port = config[SERVERPORT]
+        api_key = config.get(APIKEY, "")
+        session = async_create_clientsession(
+            hass,
+            base_url=f"http://{server_ip}:{server_port}/api/v2/",
+            headers={
+                'Content-Type': 'application/json',
+                'x-api-key': api_key
+            })
+        api_client = TdarrApiClient(f"{server_ip}:{server_port}", session)
+        return api_client
 
     def __init__(self, id: str, session: aiohttp.ClientSession):
         self._id = id

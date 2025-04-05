@@ -21,6 +21,9 @@ cancel_worker_item:
       description: The reason for cancelling the worker. Shown in the Tdarr logs. Defaults to "user" to match the value when cancelling in Tdarr.
       selector:
         text:
+get_workers:
+  name: Get Workers
+  description: Gets the currently active workers for a given node
 scan_library:
   name: "Scan Library"
   description: "Scan a Tdarr Library"
@@ -43,6 +46,3 @@ scan_library:
           options:
             - find_new
             - fresh
-get_workers:
-  name: Get Workers
-  description: Gets the currently active workers for a given node

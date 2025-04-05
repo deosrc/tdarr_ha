@@ -5,6 +5,7 @@ from datetime import timedelta
 from typing import Dict
 
 import async_timeout
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
@@ -13,6 +14,7 @@ from homeassistant.helpers.update_coordinator import (
 
 from .const import (
     DOMAIN,
+    SERVERIP,
 )
 
 from .api import TdarrApiClient
@@ -23,19 +25,12 @@ _LOGGER = logging.getLogger(__name__)
 class TdarrDataUpdateCoordinator(DataUpdateCoordinator[dict]):
     """DataUpdateCoordinator to handle fetching new data about the Tdarr Controller."""
 
-    def __init__(self, hass, serverip, serverport, update_interval, api_key):
+    def __init__(self, hass: HomeAssistant, update_interval, config_data):
         """Initialize the coordinator and set up the Controller object."""
         self._hass = hass
-        self.serverip = serverip
 
-        self._session = async_create_clientsession(
-            hass,
-            base_url=f"http://{serverip}:{serverport}/api/v2/",
-            headers={
-                'Content-Type': 'application/json',
-                'x-api-key': api_key
-            })
-        self.tdarr = TdarrApiClient(f"{serverip}:{serverport}", self._session)
+        self.serverip = config_data[SERVERIP]
+        self.tdarr: TdarrApiClient = TdarrApiClient.from_config(hass, config_data)
         self._available = True
 
         super().__init__(
@@ -50,12 +45,12 @@ class TdarrDataUpdateCoordinator(DataUpdateCoordinator[dict]):
         try:
             async with async_timeout.timeout(30):
                 async with asyncio.TaskGroup() as tg:
-                    status = tg.create_task(self.tdarr.get_status())
-                    nodes = tg.create_task(self.tdarr.get_nodes())
-                    stats = tg.create_task(self.tdarr.get_stats())
-                    staged = tg.create_task(self.tdarr.get_staged())
-                    libraries = tg.create_task(self.tdarr.get_libraries())
-                    global_settings = tg.create_task(self.tdarr.get_global_settings())
+                    status = tg.create_task(self.tdarr.async_get_status())
+                    nodes = tg.create_task(self.tdarr.async_get_nodes())
+                    stats = tg.create_task(self.tdarr.async_get_stats())
+                    staged = tg.create_task(self.tdarr.async_get_staged())
+                    libraries = tg.create_task(self.tdarr.async_get_libraries())
+                    global_settings = tg.create_task(self.tdarr.async_get_global_settings())
 
                 data = {
                     "server": status.result(),

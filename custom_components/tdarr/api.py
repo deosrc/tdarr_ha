@@ -1,11 +1,21 @@
 import asyncio
 import logging
-from typing import Any
+from typing import (
+    Any,
+    Dict,
+)
 import aiohttp
 
+from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
+from homeassistant.helpers.aiohttp_client import async_create_clientsession
 
-from .const import WORKER_TYPES
+from .const import (
+    APIKEY,
+    SERVERIP,
+    SERVERPORT,
+    WORKER_TYPES,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -13,11 +23,25 @@ _LOGGER = logging.getLogger(__name__)
 class TdarrApiClient(object):
     """API Client for interacting with a Tdarr server"""
 
+    def from_config(hass: HomeAssistant, config: Dict[str, Any]):
+        server_ip = config[SERVERIP]
+        server_port = config[SERVERPORT]
+        api_key = config.get(APIKEY, "")
+        session = async_create_clientsession(
+            hass,
+            base_url=f"http://{server_ip}:{server_port}/api/v2/",
+            headers={
+                'Content-Type': 'application/json',
+                'x-api-key': api_key
+            })
+        api_client = TdarrApiClient(f"{server_ip}:{server_port}", session)
+        return api_client
+
     def __init__(self, id: str, session: aiohttp.ClientSession):
         self._id = id
         self._session = session
         
-    async def get_nodes(self):
+    async def async_get_nodes(self):
         _LOGGER.debug("Retrieving nodes from %s", self._id)
         r = await self._session.get('get-nodes')
         if r.status == 200:
@@ -31,7 +55,7 @@ class TdarrApiClient(object):
         else:
             return "ERROR"
 
-    async def get_status(self):
+    async def async_get_status(self):
         _LOGGER.debug("Retrieving status from %s", self._id)
         r = await self._session.get('status')
         if r.status == 200:
@@ -40,9 +64,9 @@ class TdarrApiClient(object):
         else:
             return "ERROR"
     
-    async def get_libraries(self):
+    async def async_get_libraries(self):
         _LOGGER.debug("Retrieving libraries from %s", self._id)
-        library_settings = await self.get_library_settings()
+        library_settings = await self.async_get_library_settings()
         libraries = {l["_id"]: { "name": l["name"] } for l in library_settings}
         libraries.update({ 
             "": { 
@@ -51,16 +75,16 @@ class TdarrApiClient(object):
         }) 
         _LOGGER.debug("Libraries: %s", libraries) 
  
-        async def update_library_details(library_id, data: dict):
-            data.update(await self.get_pies(library_id))
+        async def async_update_library_details(library_id, data: dict):
+            data.update(await self.async_get_pies(library_id))
 
         async with asyncio.TaskGroup() as tg:
             for library_id, data in libraries.items():
-                tg.create_task(update_library_details(library_id, data))
+                tg.create_task(async_update_library_details(library_id, data))
         
         return libraries
 
-    async def get_stats(self):
+    async def async_get_stats(self):
         _LOGGER.debug("Retrieving stats from %s", self._id)
         post = {
             "data": {
@@ -77,7 +101,7 @@ class TdarrApiClient(object):
         else:
             return "ERROR"
     
-    async def get_library_settings(self):
+    async def async_get_library_settings(self):
         _LOGGER.debug("Retrieving library settings from %s", self._id)
         post = {
             "data": {
@@ -92,7 +116,7 @@ class TdarrApiClient(object):
         else:
             return
         
-    async def get_pies(self, library_id=""):
+    async def async_get_pies(self, library_id=""):
         _LOGGER.debug("Retrieving pies for library ID '%s' from %s", library_id, self._id)
         post = {
             "data": {
@@ -106,7 +130,7 @@ class TdarrApiClient(object):
         else:
             return "ERROR"
         
-    async def get_staged(self):
+    async def async_get_staged(self):
         _LOGGER.debug("Retrieving staged files from %s", self._id)
         post = {
             "data": {
@@ -124,7 +148,7 @@ class TdarrApiClient(object):
         else:
             return "ERROR"
         
-    async def get_global_settings(self):  
+    async def async_get_global_settings(self):  
         _LOGGER.debug("Retrieving global settings from %s", self._id)
         post = {
             "data": {
@@ -141,7 +165,15 @@ class TdarrApiClient(object):
         else:
             return {"message": r.text, "status_code": r.status, "status": "ERROR"}
         
-    async def set_global_setting(self, setting_key, value):
+    async def async_get_node_id(self, node_name: str) -> str:
+        all_node_data = await self.get_nodes()
+        node_data = all_node_data.get(node_name)
+        if node_data:
+            return node_data["_id"]
+        else:
+            raise HomeAssistantError(f"Could not determine ID for node '{node_name}'.")
+        
+    async def async_set_global_setting(self, setting_key, value):
         _LOGGER.debug("Setting global setting '%s' for %s", setting_key, self._id)
         data = {
             "data":{
@@ -165,7 +197,7 @@ class TdarrApiClient(object):
         
         return response
         
-    async def set_node_setting(self, node_id: str, setting_key: str, value: Any):
+    async def async_set_node_setting(self, node_id: str, setting_key: str, value: Any):
         """Set the paused state of a node.
         
         args:
@@ -193,7 +225,7 @@ class TdarrApiClient(object):
         
         return response
     
-    async def set_node_worker_limit(self, node_key: str,  worker_type: str, value: int):
+    async def async_set_node_worker_limit(self, node_key: str,  worker_type: str, value: int):
         """Set the paused state of a node.
         
         args:
@@ -209,7 +241,7 @@ class TdarrApiClient(object):
 
         _LOGGER.info("Setting %s worker limit for '%s' to %d", worker_type, node_key, value)
         
-        current_node_data = (await self.get_nodes()).get(node_key, {})
+        current_node_data = (await self.async_get_nodes()).get(node_key, {})
         if not current_node_data:
             raise HomeAssistantError("Could not determine current worker limit. Node looks to be offline.")
         
@@ -246,7 +278,7 @@ class TdarrApiClient(object):
 
     async def async_scan_library(self, library_name, mode):
         _LOGGER.debug("Scanning library '%s' using mode '%s' for %s", library_name, mode, self._id)
-        all_library_settings = await self.get_library_settings()
+        all_library_settings = await self.async_get_library_settings()
         matching_library_settings = [x for x in all_library_settings if x.get("name") == library_name]
 
         if not matching_library_settings:
@@ -272,5 +304,28 @@ class TdarrApiClient(object):
         if response.status >= 400:
             raise HomeAssistantError(f"Error response received starting library scan for '{library_name}': {response.status} {response.reason}")
         
-        _LOGGER.debug(await response.text())
-        return
+        response_text = await response.text()
+        if response_text.casefold() != "OK".casefold():
+            raise HomeAssistantError(f"Unexpected response starting library scan: {response_text}")
+    
+    async def async_cancel_worker_item(self, node_name: str, worker_id: str, reason: str) -> None:
+        node_id = await self.async_get_node_id(node_name)
+        data = {
+            "data": {
+                "nodeID": node_id,
+                "workerID": worker_id,
+                "cause": reason or "user"
+            }
+        }
+
+        try:
+            response = await self._session.post("cancel-worker-item", json=data)        
+        except aiohttp.ClientError as e:
+            raise HomeAssistantError(f"Error cancelling worker item: {e}") from e
+        
+        if response.status >= 400:
+            raise HomeAssistantError(f"Error response recieved cancelling worker item: {response.status} {response.reason}")
+        
+        response_text = await response.text()
+        if response_text.casefold() != "OK".casefold():
+            raise HomeAssistantError(f"Unexpected response cancelling worker item: {response_text}")

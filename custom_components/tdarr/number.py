@@ -50,7 +50,7 @@ NODE_ENTITY_DESCRIPTIONS = {
         step=1,
         mode=NumberMode.BOX,
         value_fn=lambda data: data.get("workerLimits", {}).get("healthcheckcpu"),
-        update_fn=lambda api, entity, value: api.set_node_worker_limit(entity.node_key, "healthcheckcpu", int(value))
+        update_fn=lambda api, entity, value: api.async_set_node_worker_limit(entity.node_key, "healthcheckcpu", int(value))
     ),
     TdarrNumberEntityDescription[TdarrNodeEntity](
         key="worker_limit_healthcheck_gpu",
@@ -60,7 +60,7 @@ NODE_ENTITY_DESCRIPTIONS = {
         step=1,
         mode=NumberMode.BOX,
         value_fn=lambda data: data.get("workerLimits", {}).get("healthcheckgpu"),
-        update_fn=lambda api, entity, value: api.set_node_worker_limit(entity.node_key, "healthcheckgpu", int(value))
+        update_fn=lambda api, entity, value: api.async_set_node_worker_limit(entity.node_key, "healthcheckgpu", int(value))
     ),
     TdarrNumberEntityDescription[TdarrNodeEntity](
         key="worker_limit_transcode_cpu",
@@ -70,7 +70,7 @@ NODE_ENTITY_DESCRIPTIONS = {
         step=1,
         mode=NumberMode.BOX,
         value_fn=lambda data: data.get("workerLimits", {}).get("transcodecpu"),
-        update_fn=lambda api, entity, value: api.set_node_worker_limit(entity.node_key, "transcodecpu", int(value))
+        update_fn=lambda api, entity, value: api.async_set_node_worker_limit(entity.node_key, "transcodecpu", int(value))
     ),
     TdarrNumberEntityDescription[TdarrNodeEntity](
         key="worker_limit_transcode_gpu",
@@ -80,7 +80,7 @@ NODE_ENTITY_DESCRIPTIONS = {
         step=1,
         mode=NumberMode.BOX,
         value_fn=lambda data: data.get("workerLimits", {}).get("transcodegpu"),
-        update_fn=lambda api, entity, value: api.set_node_worker_limit(entity.node_key, "transcodegpu", int(value))
+        update_fn=lambda api, entity, value: api.async_set_node_worker_limit(entity.node_key, "transcodegpu", int(value))
     ),
 }
 

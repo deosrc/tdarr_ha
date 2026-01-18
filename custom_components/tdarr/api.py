@@ -40,131 +40,159 @@ class TdarrApiClient(object):
     def __init__(self, id: str, session: aiohttp.ClientSession):
         self._id = id
         self._session = session
-        
+
     async def async_get_nodes(self):
-        _LOGGER.debug("Retrieving nodes from %s", self._id)
-        r = await self._session.get('get-nodes')
-        if r.status == 200:
-            data = await r.json()
+        try:
+            _LOGGER.debug("Retrieving nodes from %s", self._id)
+            r = await self._session.get('get-nodes')
+            if r.status == 200:
+                data = await r.json()
 
-            # Node IDs can change when node is restarted, so replace with node name instead.
-            # Fallback to ID if node name is unavailable for some reason.
-            data = { value.get("nodeName", key): value for key, value in data.items()}
+                # Node IDs can change when node is restarted, so replace with node name instead.
+                # Fallback to ID if node name is unavailable for some reason.
+                data = { value.get("nodeName", key): value for key, value in data.items()}
 
-            return data
-        else:
-            return "ERROR"
+                return data
+            else:
+                return "ERROR"
+        except Exception as err:
+            _LOGGER.warning("Failed to retrieve node data.", err)
+            raise HomeAssistantError("Failed to retrieve node data.") from err
 
     async def async_get_status(self):
-        _LOGGER.debug("Retrieving status from %s", self._id)
-        r = await self._session.get('status')
-        if r.status == 200:
-            result = await r.json()
-            return result
-        else:
-            return "ERROR"
-    
+        try:
+            _LOGGER.debug("Retrieving status from %s", self._id)
+            r = await self._session.get('status')
+            if r.status == 200:
+                result = await r.json()
+                return result
+            else:
+                return "ERROR"
+        except Exception as err:
+            _LOGGER.warning("Failed to retrieve status data.", err)
+            raise HomeAssistantError("Failed to retrieve status data.") from err
+
     async def async_get_libraries(self):
         _LOGGER.debug("Retrieving libraries from %s", self._id)
         library_settings = await self.async_get_library_settings()
         libraries = {l["_id"]: { "name": l["name"] } for l in library_settings}
-        libraries.update({ 
-            "": { 
-                "name": "All" 
-            } 
-        }) 
-        _LOGGER.debug("Libraries: %s", libraries) 
- 
+        libraries.update({
+            "": {
+                "name": "All"
+            }
+        })
+        _LOGGER.debug("Libraries: %s", libraries)
+
         async def async_update_library_details(library_id, data: dict):
             data.update(await self.async_get_pies(library_id))
 
         async with asyncio.TaskGroup() as tg:
             for library_id, data in libraries.items():
                 tg.create_task(async_update_library_details(library_id, data))
-        
+
         return libraries
 
     async def async_get_stats(self):
-        _LOGGER.debug("Retrieving stats from %s", self._id)
-        post = {
-            "data": {
-                "collection":"StatisticsJSONDB",
-                "mode":"getById",
-                "docID":"statistics",
-                "obj":{}
-                },
-            "timeout":1000
-        }
-        r = await self._session.post('cruddb', json = post)
-        if r.status == 200:
-            return await r.json()
-        else:
-            return "ERROR"
-    
+        try:
+            _LOGGER.debug("Retrieving stats from %s", self._id)
+            post = {
+                "data": {
+                    "collection":"StatisticsJSONDB",
+                    "mode":"getById",
+                    "docID":"statistics",
+                    "obj":{}
+                    },
+                "timeout":1000
+            }
+            r = await self._session.post('cruddb', json = post)
+            if r.status == 200:
+                return await r.json()
+            else:
+                return "ERROR"
+        except Exception as err:
+            _LOGGER.warning("Failed to retrieve stats data.", err)
+            raise HomeAssistantError("Failed to retrieve stats data.") from err
+
     async def async_get_library_settings(self):
-        _LOGGER.debug("Retrieving library settings from %s", self._id)
-        post = {
-            "data": {
-                "collection":"LibrarySettingsJSONDB",
-                "mode":"getAll",
-                },
-            "timeout":20000
-        }
-        r = await self._session.post('cruddb', json = post)
-        if r.status == 200:
-            return await r.json()
-        else:
-            return
-        
+        try:
+            _LOGGER.debug("Retrieving library settings from %s", self._id)
+            post = {
+                "data": {
+                    "collection":"LibrarySettingsJSONDB",
+                    "mode":"getAll",
+                    },
+                "timeout":20000
+            }
+            r = await self._session.post('cruddb', json = post)
+            if r.status == 200:
+                return await r.json()
+            else:
+                return
+        except Exception as err:
+            _LOGGER.warning("Failed to retrieve status data.", err)
+            raise HomeAssistantError("Failed to retrieve status data.") from err
+
     async def async_get_pies(self, library_id=""):
-        _LOGGER.debug("Retrieving pies for library ID '%s' from %s", library_id, self._id)
-        post = {
-            "data": {
-                "libraryId": library_id
-            },
-        }
-        r = await self._session.post('stats/get-pies', json = post)
-        if r.status == 200:
-            data = await r.json()
-            return data["pieStats"]
-        else:
-            return "ERROR"
-        
+        try:
+            _LOGGER.debug("Retrieving pies for library ID '%s' from %s", library_id, self._id)
+            post = {
+                "data": {
+                    "libraryId": library_id
+                },
+            }
+            r = await self._session.post('stats/get-pies', json = post)
+            if r.status == 200:
+                data = await r.json()
+                return data["pieStats"]
+            else:
+                return "ERROR"
+        except Exception as err:
+            _LOGGER.warning("Failed to retrieve pie data for library %s.", library_id, err)
+            raise HomeAssistantError(f"Failed to retrieve pie data for library {library_id}.") from err
+
     async def async_get_staged(self):
-        _LOGGER.debug("Retrieving staged files from %s", self._id)
-        post = {
-            "data": {
-                "filters":[],
-                "start":0,
-                "pageSize":10,
-                "sorts":[],
-                "opts":{}
-                },
-            "timeout":1000
-        }
-        r = await self._session.post('client/staged', json = post)
-        if r.status == 200:
-            return await r.json()
-        else:
-            return "ERROR"
-        
-    async def async_get_global_settings(self):  
-        _LOGGER.debug("Retrieving global settings from %s", self._id)
-        post = {
-            "data": {
-                "collection":"SettingsGlobalJSONDB",
-                "mode":"getById",
-                "docID":"globalsettings",
-                "obj":{}
-                },
-            "timeout":1000
-        }
-        r = await self._session.post('cruddb', json = post)
-        if r.status == 200:
-            return await r.json()
-        else:
-            return {"message": r.text, "status_code": r.status, "status": "ERROR"}
-        
+        try:
+            _LOGGER.debug("Retrieving staged files from %s", self._id)
+            post = {
+                "data": {
+                    "filters":[],
+                    "start":0,
+                    "pageSize":10,
+                    "sorts":[],
+                    "opts":{}
+                    },
+                "timeout":1000
+            }
+            r = await self._session.post('client/staged', json = post)
+            if r.status == 200:
+                return await r.json()
+            else:
+                return "ERROR"
+        except Exception as err:
+            _LOGGER.warning("Failed to retrieve staged file data.", err)
+            raise HomeAssistantError("Failed to retrieve staged file data.") from err
+
+    async def async_get_global_settings(self):
+        try:
+            _LOGGER.debug("Retrieving global settings from %s", self._id)
+            post = {
+                "data": {
+                    "collection":"SettingsGlobalJSONDB",
+                    "mode":"getById",
+                    "docID":"globalsettings",
+                    "obj":{}
+                    },
+                "timeout":1000
+            }
+            r = await self._session.post('cruddb', json = post)
+            if r.status == 200:
+                return await r.json()
+            else:
+                return {"message": r.text, "status_code": r.status, "status": "ERROR"}
+        except Exception as err:
+            _LOGGER.warning("Failed to retrieve global settings.", err)
+            raise HomeAssistantError("Failed to retrieve global settings.") from err
+
     async def async_get_node_id(self, node_name: str) -> str:
         all_node_data = await self.async_get_nodes()
         node_data = all_node_data.get(node_name)
@@ -172,7 +200,7 @@ class TdarrApiClient(object):
             return node_data["_id"]
         else:
             raise HomeAssistantError(f"Could not determine ID for node '{node_name}'.")
-        
+
     async def async_set_global_setting(self, setting_key, value):
         _LOGGER.debug("Setting global setting '%s' for %s", setting_key, self._id)
         data = {
@@ -188,18 +216,18 @@ class TdarrApiClient(object):
         }
 
         try:
-            response = await self._session.post('cruddb', json=data)            
+            response = await self._session.post('cruddb', json=data)
         except aiohttp.ClientError as e:
             raise HomeAssistantError(f"Error writing Tdarr global setting {setting_key}: {e}") from e
-        
+
         if response.status >= 400:
             raise HomeAssistantError(f"Error response received writing Tdarr global setting {setting_key}: {response.status} {response.reason}")
-        
+
         return response
-        
+
     async def async_set_node_setting(self, node_id: str, setting_key: str, value: Any):
         """Set the paused state of a node.
-        
+
         args:
             node_id: The Tdarr node ID. NOTE: This may be different from the node key used internally by the integration.
             setting_key: The setting to update for the node.
@@ -216,18 +244,18 @@ class TdarrApiClient(object):
         }
 
         try:
-            response = await self._session.post('update-node', json=data)            
+            response = await self._session.post('update-node', json=data)
         except aiohttp.ClientError as e:
             raise HomeAssistantError(f"Error writing node '{node_id}' setting '{setting_key}': {e}") from e
-        
+
         if response.status >= 400:
             raise HomeAssistantError(f"Error response received writing node '{node_id}' setting '{setting_key}': {response.status} {response.reason}")
-        
+
         return response
-    
+
     async def async_set_node_worker_limit(self, node_key: str,  worker_type: str, value: int):
         """Set the paused state of a node.
-        
+
         args:
             node_key: The internal ID of the node for the integration. This is usually the node name.
             worker_type: The type of worker to set.
@@ -240,11 +268,11 @@ class TdarrApiClient(object):
             raise HomeAssistantError(f"Worker type must be one of {', '.join(WORKER_TYPES)}")
 
         _LOGGER.info("Setting %s worker limit for '%s' to %d", worker_type, node_key, value)
-        
+
         current_node_data = (await self.async_get_nodes()).get(node_key, {})
         if not current_node_data:
             raise HomeAssistantError("Could not determine current worker limit. Node looks to be offline.")
-        
+
         current_worker_limit = current_node_data.get('workerLimits', {}).get(worker_type)
         if current_worker_limit is None:
             raise HomeAssistantError("Could not determine current worker limit.")
@@ -297,17 +325,17 @@ class TdarrApiClient(object):
         }
 
         try:
-            response = await self._session.post('scan-files', json=data)            
+            response = await self._session.post('scan-files', json=data)
         except aiohttp.ClientError as e:
             raise HomeAssistantError(f"Error starting library scan for '{library_name}': {e}") from e
-        
+
         if response.status >= 400:
             raise HomeAssistantError(f"Error response received starting library scan for '{library_name}': {response.status} {response.reason}")
-        
+
         response_text = await response.text()
         if response_text.casefold() != "OK".casefold():
             raise HomeAssistantError(f"Unexpected response starting library scan: {response_text}")
-    
+
     async def async_cancel_worker_item(self, node_name: str, worker_id: str, reason: str) -> None:
         node_id = await self.async_get_node_id(node_name)
         data = {
@@ -319,13 +347,13 @@ class TdarrApiClient(object):
         }
 
         try:
-            response = await self._session.post("cancel-worker-item", json=data)        
+            response = await self._session.post("cancel-worker-item", json=data)
         except aiohttp.ClientError as e:
             raise HomeAssistantError(f"Error cancelling worker item: {e}") from e
-        
+
         if response.status >= 400:
             raise HomeAssistantError(f"Error response recieved cancelling worker item: {response.status} {response.reason}")
-        
+
         response_text = await response.text()
         if response_text.casefold() != "OK".casefold():
             raise HomeAssistantError(f"Unexpected response cancelling worker item: {response_text}")

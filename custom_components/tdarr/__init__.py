@@ -32,12 +32,9 @@ from .coordinator import TdarrDataUpdateCoordinator
 from .const import (
     DOMAIN,
     MANUFACTURER,
-    SERVERIP,
-    SERVERPORT,
     UPDATE_INTERVAL,
     UPDATE_INTERVAL_DEFAULT,
-    COORDINATOR,
-    APIKEY
+    COORDINATOR
 )
 
 CONFIG_SCHEMA = vol.Schema({DOMAIN: vol.Schema({})}, extra=vol.ALLOW_EXTRA)
@@ -71,7 +68,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     await coordinator.async_refresh()
 
     # Registers update listener to update config entry when options are updated.
-    tdarr_options_listener = entry.add_update_listener(options_update_listener) 
+    tdarr_options_listener = entry.add_update_listener(options_update_listener)
 
     if not coordinator.last_update_success:
         raise ConfigEntryNotReady
@@ -94,7 +91,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     hass.services.async_register(
         DOMAIN,
-        "scan_library", 
+        "scan_library",
         async_scan_library
     )
 
@@ -106,7 +103,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     hass.services.async_register(
         DOMAIN,
-        "cancel_worker_item", 
+        "cancel_worker_item",
         async_cancel_worker_item
     )
 
@@ -116,7 +113,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     hass.services.async_register(
         DOMAIN,
-        "get_workers", 
+        "get_workers",
         async_get_workers,
         supports_response=SupportsResponse.ONLY
     )
@@ -152,14 +149,14 @@ class TdarrEntity(CoordinatorEntity[TdarrDataUpdateCoordinator]):
         """Initialize the entity."""
         super().__init__(coordinator)
         self.entity_description = entity_description
-        
+
         # Required for HA 2022.7
         self.coordinator_context = object()
 
     async def async_added_to_hass(self) -> None:
         """When entity is added to hass."""
         await super().async_added_to_hass()
-        self._handle_coordinator_update()    
+        self._handle_coordinator_update()
 
     @property
     def data(self) -> dict:
@@ -174,7 +171,7 @@ class TdarrEntity(CoordinatorEntity[TdarrDataUpdateCoordinator]):
             ATTR_SW_VERSION: self.coordinator.data.get("server", {}).get("version", "Unknown"),
             ATTR_MANUFACTURER: MANUFACTURER
         }
-    
+
     @property
     def base_attributes(self) -> Dict[str, Any] | None:
         return {
@@ -189,7 +186,7 @@ class TdarrServerEntity(TdarrEntity):
     def unique_id(self):
         """Return the unique ID of the entity."""
         return f"{self.coordinator.serverip}-server-{self.entity_description.key}"
-    
+
     @property
     def device_info(self):
         return {
@@ -209,11 +206,11 @@ class TdarrLibraryEntity(TdarrEntity):
     def unique_id(self):
         """Return the unique ID of the entity."""
         return f"{self.coordinator.serverip}-library-{self.library_id}-{self.entity_description.key}"
-    
+
     @property
     def data(self) -> dict:
         return self.coordinator.data.get("libraries", {}).get(self.library_id)
-    
+
     @property
     def base_attributes(self) -> Dict[str, Any] | None:
         video_info = self.data.get("video", {})
@@ -242,11 +239,11 @@ class TdarrNodeEntity(TdarrEntity):
     def unique_id(self):
         """Return the unique ID of the entity."""
         return f"{self.coordinator.serverip}-node-{self.node_key}-{self.entity_description.key}"
-    
+
     @property
     def tdarr_node_id(self) -> str | None:
         return self.data.get("_id")
-    
+
     @property
     def data(self) -> dict:
         return self.coordinator.data.get("nodes", {}).get(self.node_key, {})
@@ -265,7 +262,7 @@ class TdarrNodeEntity(TdarrEntity):
             ATTR_VIA_DEVICE: server_identifier,
         })
         return device_info
-    
+
     @property
     def base_attributes(self) -> Dict[str, Any] | None:
         return {

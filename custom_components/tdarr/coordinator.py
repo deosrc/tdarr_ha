@@ -74,8 +74,9 @@ class TdarrDataUpdateCoordinator(DataUpdateCoordinator[dict]):
                         _LOGGER.info("New nodes discovered: %s", new_nodes)
                         self.hass.config_entries.async_schedule_reload(self.config_entry.entry_id)
 
+                self._available = True
                 return data
-            
+
         except Exception as ex:
             self._available = False  # Mark as unavailable
             _LOGGER.warning(str(ex))

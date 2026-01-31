@@ -89,12 +89,9 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
     @callback
     def async_get_options_flow(config_entry: ConfigEntry):
         """Get the options flow for this handler."""
-        return OptionsFlow(config_entry)
+        return OptionsFlowHandler()
 
-class OptionsFlow(OptionsFlow):
-    def __init__(self, config_entry: ConfigEntry):
-        """Initialize options flow."""
-        self.config_entry = config_entry
+class OptionsFlowHandler(OptionsFlow):
 
     async def async_step_init(self, user_input=None):
         if user_input is not None:

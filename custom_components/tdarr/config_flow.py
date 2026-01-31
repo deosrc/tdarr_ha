@@ -2,9 +2,19 @@
 import logging
 
 import voluptuous as vol
-from homeassistant import config_entries, core, exceptions
-from homeassistant.core import callback
-from homeassistant.helpers.aiohttp_client import async_create_clientsession
+from homeassistant.core import (
+    HomeAssistant,
+)
+from homeassistant.config_entries import (
+    ConfigEntry,
+    ConfigFlow,
+    OptionsFlow,
+    CONN_CLASS_CLOUD_POLL,
+)
+from homeassistant.core import (
+    callback,
+)
+from homeassistant.exceptions import HomeAssistantError
 from requests.exceptions import ConnectionError
 
 from .const import (
@@ -27,7 +37,7 @@ DATA_SCHEMA = vol.Schema(
     }
 )
 
-async def validate_input(hass: core.HomeAssistant, data):
+async def validate_input(hass: HomeAssistant, data):
     """Validate the user input allows us to connect.
 
     Data has the keys from DATA_SCHEMA with values provided by the user.
@@ -48,11 +58,11 @@ async def validate_input(hass: core.HomeAssistant, data):
     # Return info that you want to store in the config entry.
     return {"title": f"Tdarr Server ({data[SERVERIP]})"}
 
-class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+class ConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Tdarr Controller."""
 
     VERSION = 1
-    CONNECTION_CLASS = config_entries.CONN_CLASS_CLOUD_POLL
+    CONNECTION_CLASS = CONN_CLASS_CLOUD_POLL
 
     async def async_step_user(self, user_input=None):
         """Handle the initial step."""
@@ -77,12 +87,12 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     @callback
-    def async_get_options_flow(config_entry):
+    def async_get_options_flow(config_entry: ConfigEntry):
         """Get the options flow for this handler."""
         return OptionsFlow(config_entry)
 
-class OptionsFlow(config_entries.OptionsFlow):
-    def __init__(self, config_entry: config_entries.ConfigEntry):
+class OptionsFlow(OptionsFlow):
+    def __init__(self, config_entry: ConfigEntry):
         """Initialize options flow."""
         self.config_entry = config_entry
 
@@ -114,10 +124,10 @@ class OptionsFlow(config_entries.OptionsFlow):
 
         return self.async_show_form(step_id="init", data_schema=vol.Schema(options))
 
-class InvalidAPIKEY(exceptions.HomeAssistantError):
+class InvalidAPIKEY(HomeAssistantError):
     """Error to indicate the wrong API key was entered"""
 
-class AuthRequired(exceptions.HomeAssistantError):
+class AuthRequired(HomeAssistantError):
     """Error to indicate Auth is required"""
 
 
